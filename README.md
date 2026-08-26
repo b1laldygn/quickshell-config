@@ -1,0 +1,2 @@
+# quickshell-config
+idk
