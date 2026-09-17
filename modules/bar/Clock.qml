@@ -1,6 +1,6 @@
 import QtQuick
 import Quickshell.Io
-import "root:/config"
+import "root:/services"
 
 Item {
     id: root
@@ -13,8 +13,14 @@ Item {
         id: clockText
         anchors.centerIn: parent
         text: root.time
-        color: Colors.text
+        color: "#cdd6f4"
         font.pixelSize: 13
+    }
+
+    MouseArea {
+        anchors.fill: parent
+        cursorShape: Qt.PointingHandCursor
+        onClicked: CalendarState.toggle()
     }
 
     Process {

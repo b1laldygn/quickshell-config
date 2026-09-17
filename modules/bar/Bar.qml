@@ -4,7 +4,7 @@ import Quickshell.Wayland
 import QtQuick
 import QtQuick.Layouts
 import "root:/modules/bar"
-import "root:config"
+import "root:/config"
 
 Scope {
     id: root
@@ -25,7 +25,7 @@ Scope {
             implicitHeight: 34
             color: Colors.background
 
-            // Sol: hızlı erişim ikonları
+            // Sol: hızlı erişim ikonları + batarya
             RowLayout {
                 anchors.left: parent.left
                 anchors.leftMargin: 12
@@ -33,20 +33,24 @@ Scope {
                 spacing: 10
 
                 QuickToggles {}
+                BatteryIndicator {}
+                SystemMonitor {}
+                MediaControls {}
             }
-
-            // Orta: saat (mutlak ortalanmış, sol/sağ içerikten bağımsız)
+            // Orta: saat (mutlak ortalanmış)
             Clock {
                 anchors.centerIn: parent
             }
 
-            // Sağ: workspace'ler
+            // Sağ: Sistem tepsisi (SysTray) ve Workspace'ler
             RowLayout {
                 anchors.right: parent.right
                 anchors.rightMargin: 12
                 anchors.verticalCenter: parent.verticalCenter
-                spacing: 10
+                spacing: 12
 
+                NotificationBell {}
+                SysTray { trayWindow: bar }
                 Workspaces { screenName: bar.modelData.name }
             }
         }
