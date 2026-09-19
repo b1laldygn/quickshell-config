@@ -83,12 +83,12 @@ Scope {
             Item {
                 anchors.fill: parent
                 focus: btWindow.visible
-                Keys.onEscapePressed: btWindow.visible = false
+                Keys.onEscapePressed: BluetoothListState.visible = false   // önce: btWindow.visible = false
 
                 MouseArea {
                     anchors.fill: parent
-                    onClicked: btWindow.visible = false
-                }
+                    onClicked: BluetoothListState.visible = false           // önce: btWindow.visible = false
+    }
 
                 Rectangle {
                     anchors.top: parent.top

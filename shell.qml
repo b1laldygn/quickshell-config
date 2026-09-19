@@ -15,6 +15,10 @@ import "root:/modules/bluetooth"
 import "root:/modules/audio"
 import "root:/modules/sysmon"
 import "root:/modules/calendar"
+import "root:/modules/keybinds"
+import "root:/modules/mixer"
+import "root:/modules/alttab"
+
 
 ShellRoot {
     Bar {}
@@ -39,7 +43,13 @@ ShellRoot {
     AudioDeviceIpc {}
     SystemMonitorPanel {}
     Calendar {}
-    
+    KeybindsOverlay {}
+    KeybindsIpc {}
+    AudioMixer {}
+    MixerIpc {}
+    AltTabOverlay {}
+    AltTabIpc {}
+
     Timer {
         interval: 1500
         running: true

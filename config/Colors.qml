@@ -3,36 +3,51 @@ pragma Singleton
 import QtQuick
 
 QtObject {
-    // --- Ham palet (Catppuccin Mocha) ---
-    readonly property color base: "#1e1e2e"
-    readonly property color mantle: "#181825"
-    readonly property color surface0: "#313244"
-    readonly property color surface1: "#45475a"
-    readonly property color surface2: "#585b70"
+    // --- Ham palet (varsayılan: Catppuccin Mocha, wallpaper üretimi başarısız olursa fallback) ---
+    property color base: "#1e1e2e"
+    property color mantle: "#181825"
+    property color surface0: "#313244"
+    property color surface1: "#45475a"
+    property color surface2: "#585b70"
 
-    readonly property color text: "#cdd6f4"
-    readonly property color subtext: "#a6adc8"
+    property color text: "#cdd6f4"
+    property color subtext: "#a6adc8"
 
-    readonly property color blue: "#89b4fa"
-    readonly property color green: "#a6e3a1"
-    readonly property color yellow: "#f9e2af"
-    readonly property color red: "#f38ba8"
-    readonly property color mauve: "#cba6f7"
+    property color blue: "#89b4fa"
+    property color green: "#a6e3a1"
+    property color yellow: "#f9e2af"
+    property color red: "#f38ba8"
+    property color mauve: "#cba6f7"
 
     // --- Anlamsal isimler (widget'larda bunları kullan) ---
-    readonly property color background: base
-    readonly property color backgroundAlt: mantle
-    readonly property color foreground: text
-    readonly property color foregroundMuted: subtext
+    property color background: base
+    property color backgroundAlt: mantle
+    property color foreground: text
+    property color foregroundMuted: subtext
 
-    readonly property color accent: blue
-    readonly property color accentText: base   // accent üstü metin (koyu zeminde okunaklı)
+    property color accent: blue
+    property color accentText: base
 
-    readonly property color hover: surface0
-    readonly property color active: surface1
-    readonly property color border: surface1
+    property color hover: surface0
+    property color active: surface1
+    property color border: surface1
 
-    readonly property color danger: red
-    readonly property color warning: yellow
-    readonly property color success: green
+    property color danger: red
+    property color warning: yellow
+    property color success: green
+
+    // Wallpaper'dan üretilen paleti uygula
+    function applyPalette(p) {
+        background = p.background
+        backgroundAlt = p.backgroundAlt
+        foreground = p.foreground
+        foregroundMuted = p.foregroundMuted
+        accent = p.accent
+        accentText = p.accentText
+        hover = p.hover
+        active = p.active
+        border = p.border
+        surface0 = p.hover
+        surface1 = p.active
+    }
 }

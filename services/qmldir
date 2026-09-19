@@ -14,3 +14,7 @@ singleton NetworkState 1.0 NetworkState.qml
 singleton BluetoothListState 1.0 BluetoothListState.qml
 singleton AudioDeviceListState 1.0 AudioDeviceListState.qml
 singleton CalendarState 1.0 CalendarState.qml
+singleton KeybindsState 1.0 KeybindsState.qml
+singleton DynamicTheme 1.0 DynamicTheme.qml
+singleton AudioMixerState 1.0 AudioMixerState.qml
+singleton AltTabState 1.0 AltTabState.qml

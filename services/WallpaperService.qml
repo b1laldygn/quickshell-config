@@ -28,7 +28,7 @@ QtObject {
         }
     }
 
-    function applyWallpaper(path) {
+        function applyWallpaper(path) {
         root.currentWallpaperPath = path
         applyProc.command = [
             "swww", "img", path,
@@ -36,6 +36,8 @@ QtObject {
             "--transition-duration", "1"
         ]
         applyProc.running = true
+
+        DynamicTheme.generateFromWallpaper(path)
     }
 
     function setWallpaper(path) {
