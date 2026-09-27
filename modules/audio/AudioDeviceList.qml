@@ -27,7 +27,13 @@ Scope {
             property var sources: []
 
             function refresh() { statusProc.running = true }
-            onVisibleChanged: if (visible) refresh()
+            onVisibleChanged: {
+                if (visible) {
+                    refresh()
+                    AudioMixerState.refreshMaster()
+                    AudioMixerState.refresh()
+                }
+            }
 
             function parseSection(text, sectionName, stopNames) {
                 const startIdx = text.indexOf(sectionName)
@@ -89,7 +95,7 @@ Scope {
                     anchors.topMargin: 44    // NOT: bar yüksekliğine göre ayarla
                     anchors.leftMargin: 130  // NOT: ses ikonunun gerçek x konumuna göre ayarla
                     width: 300
-                    height: 360
+                    height: 520
                     radius: 14
                     color: Colors.backgroundAlt
                     border.color: Colors.border
@@ -97,123 +103,335 @@ Scope {
 
                     MouseArea { anchors.fill: parent; onClicked: {} }
 
-                    ColumnLayout {
+                    Flickable {
                         anchors.fill: parent
                         anchors.margins: 12
-                        spacing: 10
+                        contentWidth: width
+                        contentHeight: mainColumn.implicitHeight
+                        clip: true
+                        boundsBehavior: Flickable.StopAtBounds
 
-                        RowLayout {
-                            Layout.fillWidth: true
+                        ColumnLayout {
+                            id: mainColumn
+                            width: parent.width
+                            spacing: 10
+
+                            RowLayout {
+                                Layout.fillWidth: true
+                                Text {
+                                    text: "Ses Cihazları"
+                                    color: "#F5F5F5"
+                                    font.pixelSize: 13
+                                    font.bold: true
+                                    Layout.fillWidth: true
+                                }
+                                Text {
+                                    text: "󰑓"
+                                    color: "#F5F5F5"
+                                    font.pixelSize: 14
+                                    font.family: "JetBrainsMono Nerd Font"
+                                    MouseArea {
+                                        anchors.fill: parent
+                                        cursorShape: Qt.PointingHandCursor
+                                        onClicked: {
+                                            audioWindow.refresh()
+                                            AudioMixerState.refreshMaster()
+                                            AudioMixerState.refresh()
+                                        }
+                                    }
+                                }
+                            }
+
+                            Rectangle {
+                                id: volumeCard
+                                Layout.fillWidth: true
+                                implicitHeight: 50
+                                radius: 8
+                                color: Colors.surface0
+
+                                property real localVolume: AudioMixerState.masterVolume
+                                property bool dragging: false
+
+                                Connections {
+                                    target: AudioMixerState
+                                    function onMasterVolumeChanged() {
+                                        if (!volumeCard.dragging) volumeCard.localVolume = AudioMixerState.masterVolume
+                                    }
+                                }
+
+                                ColumnLayout {
+                                    anchors.fill: parent
+                                    anchors.margins: 8
+                                    spacing: 4
+
+                                    RowLayout {
+                                        Layout.fillWidth: true
+
+                                        Text {
+                                            text: AudioMixerState.masterMuted ? "󰝟" : "󰕾"
+                                            color: "#F5F5F5"
+                                            font.pixelSize: 13
+                                            font.family: "JetBrainsMono Nerd Font"
+
+                                            MouseArea {
+                                                anchors.fill: parent
+                                                cursorShape: Qt.PointingHandCursor
+                                                onClicked: AudioMixerState.toggleMasterMute()
+                                            }
+                                        }
+
+                                        Text {
+                                            text: AudioMixerState.masterMuted ? "Sessiz" : Math.round(volumeCard.localVolume * 100) + "%"
+                                            color: AudioMixerState.masterMuted ? Colors.danger : "#F5F5F5"
+                                            font.pixelSize: 11
+                                            Layout.fillWidth: true
+                                        }
+                                    }
+
+                                    Rectangle {
+                                        Layout.fillWidth: true
+                                        height: 8
+                                        radius: 4
+                                        color: Colors.hover
+
+                                        Rectangle {
+                                            width: parent.width * Math.min(1, volumeCard.localVolume)
+                                            height: parent.height
+                                            radius: 4
+                                            color: AudioMixerState.masterMuted ? Colors.foregroundMuted : Colors.accent
+
+                                            Behavior on width {
+                                                enabled: !volumeCard.dragging
+                                                NumberAnimation { duration: 100 }
+                                            }
+                                        }
+
+                                        MouseArea {
+                                            anchors.fill: parent
+                                            cursorShape: Qt.PointingHandCursor
+
+                                            function updateFromX(x) {
+                                                const ratio = Math.max(0, Math.min(1, x / width))
+                                                volumeCard.localVolume = ratio
+                                                AudioMixerState.setMasterVolume(Math.round(ratio * 100))
+                                            }
+
+                                            onPressed: (mouse) => updateFromX(mouse.x)
+                                            onPositionChanged: (mouse) => { if (pressed) updateFromX(mouse.x) }
+                                            onReleased: AudioMixerState.refreshMaster()
+                                        }
+                                    }
+                                }
+                            }
+
                             Text {
-                                text: "Ses Cihazları"
-                                color: "#F5F5F5"
-                                font.pixelSize: 13
+                                text: "Çıkış"
+                                color: Colors.foregroundMuted
+                                font.pixelSize: 10
                                 font.bold: true
-                                Layout.fillWidth: true
                             }
+
+                            Repeater {
+                                model: audioWindow.sinks
+                                delegate: Rectangle {
+                                    Layout.fillWidth: true
+                                    height: 36
+                                    radius: 8
+                                    color: sinkArea.containsMouse ? Colors.hover : "transparent"
+
+                                    RowLayout {
+                                        anchors.fill: parent
+                                        anchors.margins: 8
+                                        spacing: 8
+                                        Text {
+                                            text: modelData.isDefault ? "󰕾" : "󰓃"
+                                            color: modelData.isDefault ? Colors.accent : "#F5F5F5"
+                                            font.pixelSize: 13
+                                            font.family: "JetBrainsMono Nerd Font"
+                                        }
+                                        Text {
+                                            text: modelData.name
+                                            color: modelData.isDefault ? Colors.accent : "#F5F5F5"
+                                            font.pixelSize: 12
+                                            Layout.fillWidth: true
+                                            elide: Text.ElideRight
+                                        }
+                                    }
+
+                                    MouseArea {
+                                        id: sinkArea
+                                        anchors.fill: parent
+                                        hoverEnabled: true
+                                        cursorShape: Qt.PointingHandCursor
+                                        onClicked: audioWindow.setDefault(modelData.id)
+                                    }
+                                }
+                            }
+
                             Text {
-                                text: "󰑓"
-                                color: "#F5F5F5"
-                                font.pixelSize: 14
-                                font.family: "JetBrainsMono Nerd Font"
-                                MouseArea {
-                                    anchors.fill: parent
-                                    cursorShape: Qt.PointingHandCursor
-                                    onClicked: audioWindow.refresh()
+                                text: "Giriş (Mikrofon)"
+                                color: Colors.foregroundMuted
+                                font.pixelSize: 10
+                                font.bold: true
+                                Layout.topMargin: 6
+                            }
+
+                            Repeater {
+                                model: audioWindow.sources
+                                delegate: Rectangle {
+                                    Layout.fillWidth: true
+                                    height: 36
+                                    radius: 8
+                                    color: sourceArea.containsMouse ? Colors.hover : "transparent"
+
+                                    RowLayout {
+                                        anchors.fill: parent
+                                        anchors.margins: 8
+                                        spacing: 8
+                                        Text {
+                                            text: "󰍬"
+                                            color: modelData.isDefault ? Colors.accent : "#F5F5F5"
+                                            font.pixelSize: 13
+                                            font.family: "JetBrainsMono Nerd Font"
+                                        }
+                                        Text {
+                                            text: modelData.name
+                                            color: modelData.isDefault ? Colors.accent : "#F5F5F5"
+                                            font.pixelSize: 12
+                                            Layout.fillWidth: true
+                                            elide: Text.ElideRight
+                                        }
+                                    }
+
+                                    MouseArea {
+                                        id: sourceArea
+                                        anchors.fill: parent
+                                        hoverEnabled: true
+                                        cursorShape: Qt.PointingHandCursor
+                                        onClicked: audioWindow.setDefault(modelData.id)
+                                    }
                                 }
                             }
-                        }
 
-                        Text {
-                            text: "Çıkış"
-                            color: Colors.foregroundMuted
-                            font.pixelSize: 10
-                            font.bold: true
-                        }
-
-                        Repeater {
-                            model: audioWindow.sinks
-                            delegate: Rectangle {
+                            Rectangle {
                                 Layout.fillWidth: true
-                                height: 36
-                                radius: 8
-                                color: sinkArea.containsMouse ? Colors.hover : "transparent"
+                                height: 1
+                                color: Colors.border
+                                Layout.topMargin: 4
+                            }
 
-                                RowLayout {
-                                    anchors.fill: parent
-                                    anchors.margins: 8
-                                    spacing: 8
-                                    Text {
-                                        text: modelData.isDefault ? "󰕾" : "󰓃"
-                                        color: modelData.isDefault ? Colors.accent : "#F5F5F5"
-                                        font.pixelSize: 13
-                                        font.family: "JetBrainsMono Nerd Font"
-                                    }
-                                    Text {
-                                        text: modelData.name
-                                        color: modelData.isDefault ? Colors.accent : "#F5F5F5"
-                                        font.pixelSize: 12
-                                        Layout.fillWidth: true
-                                        elide: Text.ElideRight
-                                    }
-                                }
+                            Text {
+                                text: "Uygulama Sesleri"
+                                color: Colors.foregroundMuted
+                                font.pixelSize: 10
+                                font.bold: true
+                            }
 
-                                MouseArea {
-                                    id: sinkArea
-                                    anchors.fill: parent
-                                    hoverEnabled: true
-                                    cursorShape: Qt.PointingHandCursor
-                                    onClicked: audioWindow.setDefault(modelData.id)
+                            Text {
+                                visible: AudioMixerState.streams.length === 0
+                                text: "Ses çalan uygulama yok"
+                                color: Colors.foregroundMuted
+                                font.pixelSize: 11
+                                font.italic: true
+                            }
+
+                            Repeater {
+                                model: AudioMixerState.streams
+
+                                Rectangle {
+                                    id: streamCard
+                                    Layout.fillWidth: true
+                                    implicitHeight: 56
+                                    radius: 8
+                                    color: Colors.surface0
+
+                                    property real localVolume: modelData.volume
+                                    property bool dragging: false
+
+                                    Connections {
+                                        target: AudioMixerState
+                                        function onStreamsChanged() {
+                                            if (!streamCard.dragging) streamCard.localVolume = modelData.volume
+                                        }
+                                    }
+
+                                    ColumnLayout {
+                                        anchors.fill: parent
+                                        anchors.margins: 8
+                                        spacing: 4
+
+                                        RowLayout {
+                                            Layout.fillWidth: true
+
+                                            Text {
+                                                text: modelData.appName
+                                                color: "#F5F5F5"
+                                                font.pixelSize: 11
+                                                font.bold: true
+                                                elide: Text.ElideRight
+                                                Layout.fillWidth: true
+                                            }
+
+                                            Text {
+                                                text: modelData.muted ? "Sessiz" : Math.round(streamCard.localVolume * 100) + "%"
+                                                color: modelData.muted ? Colors.danger : Colors.foregroundMuted
+                                                font.pixelSize: 10
+
+                                                MouseArea {
+                                                    anchors.fill: parent
+                                                    cursorShape: Qt.PointingHandCursor
+                                                    onClicked: AudioMixerState.toggleMute(modelData.id)
+                                                }
+                                            }
+                                        }
+
+                                        Rectangle {
+                                            Layout.fillWidth: true
+                                            height: 6
+                                            radius: 3
+                                            color: Colors.hover
+
+                                            Rectangle {
+                                                width: parent.width * Math.min(1, streamCard.localVolume)
+                                                height: parent.height
+                                                radius: 3
+                                                color: modelData.muted ? Colors.foregroundMuted : Colors.accent
+
+                                                Behavior on width {
+                                                    enabled: !streamCard.dragging
+                                                    NumberAnimation { duration: 100 }
+                                                }
+                                            }
+
+                                            MouseArea {
+                                                anchors.fill: parent
+                                                cursorShape: Qt.PointingHandCursor
+
+                                                function updateFromX(x) {
+                                                    const ratio = Math.max(0, Math.min(1, x / width))
+                                                    streamCard.localVolume = ratio
+                                                    AudioMixerState.setVolume(modelData.id, Math.round(ratio * 100))
+                                                }
+
+                                                onPressed: (mouse) => {
+                                                    streamCard.dragging = true
+                                                    AudioMixerState.anyDragging = true
+                                                    updateFromX(mouse.x)
+                                                }
+                                                onPositionChanged: (mouse) => { if (pressed) updateFromX(mouse.x) }
+                                                onReleased: {
+                                                    streamCard.dragging = false
+                                                    AudioMixerState.anyDragging = false
+                                                    AudioMixerState.refresh()
+                                                }
+                                            }
+                                        }
+                                    }
                                 }
                             }
+
+                            Item { Layout.fillHeight: true }
                         }
-
-                        Text {
-                            text: "Giriş (Mikrofon)"
-                            color: Colors.foregroundMuted
-                            font.pixelSize: 10
-                            font.bold: true
-                            Layout.topMargin: 6
-                        }
-
-                        Repeater {
-                            model: audioWindow.sources
-                            delegate: Rectangle {
-                                Layout.fillWidth: true
-                                height: 36
-                                radius: 8
-                                color: sourceArea.containsMouse ? Colors.hover : "transparent"
-
-                                RowLayout {
-                                    anchors.fill: parent
-                                    anchors.margins: 8
-                                    spacing: 8
-                                    Text {
-                                        text: "󰍬"
-                                        color: modelData.isDefault ? Colors.accent : "#F5F5F5"
-                                        font.pixelSize: 13
-                                        font.family: "JetBrainsMono Nerd Font"
-                                    }
-                                    Text {
-                                        text: modelData.name
-                                        color: modelData.isDefault ? Colors.accent : "#F5F5F5"
-                                        font.pixelSize: 12
-                                        Layout.fillWidth: true
-                                        elide: Text.ElideRight
-                                    }
-                                }
-
-                                MouseArea {
-                                    id: sourceArea
-                                    anchors.fill: parent
-                                    hoverEnabled: true
-                                    cursorShape: Qt.PointingHandCursor
-                                    onClicked: audioWindow.setDefault(modelData.id)
-                                }
-                            }
-                        }
-
-                        Item { Layout.fillHeight: true }
                     }
                 }
             }

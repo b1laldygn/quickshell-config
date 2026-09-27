@@ -67,6 +67,7 @@ Scope {
                 if (visible) {
                 searchText = ""
                 selectedIndex = 0
+                searchInput.text = ""
                 Qt.callLater(() => searchInput.forceActiveFocus())
     }
 }

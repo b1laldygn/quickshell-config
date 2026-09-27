@@ -18,3 +18,5 @@ singleton KeybindsState 1.0 KeybindsState.qml
 singleton DynamicTheme 1.0 DynamicTheme.qml
 singleton AudioMixerState 1.0 AudioMixerState.qml
 singleton AltTabState 1.0 AltTabState.qml
+singleton WeatherState 1.0 WeatherState.qml
+singleton WeatherPanelState 1.0 WeatherPanelState.qml

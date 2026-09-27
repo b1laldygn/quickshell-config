@@ -10,6 +10,9 @@ QtObject {
     property bool anyDragging: false
     property var streams: []
 
+    property real masterVolume: 0.5
+    property bool masterMuted: false
+
     property Process listProc: Process {
         command: ["pactl", "-f", "json", "list", "sink-inputs"]
         stdout: StdioCollector {
@@ -55,7 +58,10 @@ QtObject {
         running: root.visible && !root.anyDragging
         repeat: true
         triggeredOnStart: true
-        onTriggered: root.refresh()
+        onTriggered: {
+            root.refresh()
+            root.refreshMaster()
+        }
     }
 
     function toggle() {
@@ -78,5 +84,47 @@ QtObject {
     property Timer refreshDelay: Timer {
         interval: 150
         onTriggered: root.refresh()
+    }
+
+    property Process masterVolProc: Process {
+        command: ["pactl", "get-sink-volume", "@DEFAULT_SINK@"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const match = this.text.match(/(\d+)%/)
+                if (match) root.masterVolume = parseInt(match[1]) / 100
+            }
+        }
+    }
+
+    property Process masterMuteProc: Process {
+        command: ["pactl", "get-sink-mute", "@DEFAULT_SINK@"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                root.masterMuted = this.text.includes("yes")
+            }
+        }
+    }
+
+    function refreshMaster() {
+        masterVolProc.running = true
+        masterMuteProc.running = true
+    }
+
+    property Process setMasterVolProc: Process { command: [] }
+    function setMasterVolume(pct) {
+        setMasterVolProc.command = ["pactl", "set-sink-volume", "@DEFAULT_SINK@", pct + "%"]
+        setMasterVolProc.running = true
+    }
+
+    property Process toggleMasterMuteProc: Process { command: [] }
+    function toggleMasterMute() {
+        toggleMasterMuteProc.command = ["pactl", "set-sink-mute", "@DEFAULT_SINK@", "toggle"]
+        toggleMasterMuteProc.running = true
+        masterRefreshDelay.restart()
+    }
+
+    property Timer masterRefreshDelay: Timer {
+        interval: 150
+        onTriggered: root.refreshMaster()
     }
 }

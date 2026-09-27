@@ -35,6 +35,7 @@ Scope {
                 QuickToggles {}
                 BatteryIndicator {}
                 SystemMonitor {}
+                WeatherWidget {}
                 MediaControls {}
             }
             // Orta: saat (mutlak ortalanmış)

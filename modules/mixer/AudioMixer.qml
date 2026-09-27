@@ -20,7 +20,7 @@ Scope {
             margins { top: 44; right: 12 }
 
             implicitWidth: 320
-            implicitHeight: Math.min(460, 70 + streamList.contentHeight)
+            implicitHeight: Math.min(520, 140 + streamList.contentHeight)
             color: "transparent"
 
             WlrLayershell.layer: WlrLayer.Overlay
@@ -39,9 +39,114 @@ Scope {
                     spacing: 8
 
                     Text {
-                        text: "Uygulama Sesleri"
+                        text: "Ses Ayarları"
                         color: "#F5F5F5"
                         font.pixelSize: 14
+                        font.bold: true
+                    }
+
+                    // ---- SİSTEM (MASTER) SESİ ----
+                    Rectangle {
+                        id: masterCard
+                        Layout.fillWidth: true
+                        implicitHeight: 60
+                        radius: 8
+                        color: Colors.surface0
+
+                        property real localVolume: AudioMixerState.masterVolume
+                        property bool dragging: false
+
+                        Connections {
+                            target: AudioMixerState
+                            function onMasterVolumeChanged() {
+                                if (!masterCard.dragging) masterCard.localVolume = AudioMixerState.masterVolume
+                            }
+                        }
+
+                        ColumnLayout {
+                            anchors.fill: parent
+                            anchors.margins: 10
+                            spacing: 4
+
+                            RowLayout {
+                                Layout.fillWidth: true
+
+                                Text {
+                                    text: "Sistem Sesi"
+                                    color: "#F5F5F5"
+                                    font.pixelSize: 12
+                                    font.bold: true
+                                    Layout.fillWidth: true
+                                }
+
+                                Text {
+                                    text: AudioMixerState.masterMuted ? "Sessiz" : Math.round(masterCard.localVolume * 100) + "%"
+                                    color: AudioMixerState.masterMuted ? Colors.danger : Colors.foregroundMuted
+                                    font.pixelSize: 10
+
+                                    MouseArea {
+                                        anchors.fill: parent
+                                        cursorShape: Qt.PointingHandCursor
+                                        onClicked: AudioMixerState.toggleMasterMute()
+                                    }
+                                }
+                            }
+
+                            Rectangle {
+                                Layout.fillWidth: true
+                                height: 8
+                                radius: 4
+                                color: Colors.hover
+
+                                Rectangle {
+                                    width: parent.width * Math.min(1, masterCard.localVolume)
+                                    height: parent.height
+                                    radius: 4
+                                    color: AudioMixerState.masterMuted ? Colors.foregroundMuted : Colors.accent
+
+                                    Behavior on width {
+                                        enabled: !masterCard.dragging
+                                        NumberAnimation { duration: 100 }
+                                    }
+                                }
+
+                                MouseArea {
+                                    anchors.fill: parent
+                                    cursorShape: Qt.PointingHandCursor
+
+                                    function updateFromX(x) {
+                                        const ratio = Math.max(0, Math.min(1, x / width))
+                                        masterCard.localVolume = ratio
+                                        AudioMixerState.setMasterVolume(Math.round(ratio * 100))
+                                    }
+
+                                    onPressed: (mouse) => {
+                                        masterCard.dragging = true
+                                        AudioMixerState.anyDragging = true
+                                        updateFromX(mouse.x)
+                                    }
+                                    onPositionChanged: (mouse) => { if (pressed) updateFromX(mouse.x) }
+                                    onReleased: {
+                                        masterCard.dragging = false
+                                        AudioMixerState.anyDragging = false
+                                        AudioMixerState.refreshMaster()
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    Rectangle {
+                        Layout.fillWidth: true
+                        height: 1
+                        color: Colors.border
+                    }
+
+                    // ---- UYGULAMA BAZLI SESLER ----
+                    Text {
+                        text: "Uygulama Sesleri"
+                        color: "#F5F5F5"
+                        font.pixelSize: 12
                         font.bold: true
                     }
 
@@ -51,7 +156,7 @@ Scope {
                         color: Colors.foregroundMuted
                         font.pixelSize: 11
                         font.italic: true
-                        Layout.topMargin: 20
+                        Layout.topMargin: 10
                         Layout.alignment: Qt.AlignHCenter
                     }
 

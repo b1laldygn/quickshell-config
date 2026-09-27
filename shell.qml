@@ -18,6 +18,7 @@ import "root:/modules/calendar"
 import "root:/modules/keybinds"
 import "root:/modules/mixer"
 import "root:/modules/alttab"
+import "root:/modules/weather"
 
 
 ShellRoot {
@@ -49,6 +50,7 @@ ShellRoot {
     MixerIpc {}
     AltTabOverlay {}
     AltTabIpc {}
+    WeatherPanel {}
 
     Timer {
         interval: 1500
