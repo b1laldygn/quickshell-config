@@ -35,8 +35,8 @@ Personal Linux dotfiles featuring a custom-built **Quickshell** desktop shell an
 
 🚀 Getting Started
 Prerequisites
-
-Make sure you have the following packages installed on your Arch Linux (or preferred distro) system:
+```
+Make sure you have the following packages installed on your Linux system:
 
     Hyprland
 
