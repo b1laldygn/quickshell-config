@@ -387,7 +387,7 @@ Scope {
                                 Text {
                                     anchors.centerIn: parent
                                     visible: wsCell.cellWindows.length === 0
-                                    text: "Boş"
+                                    text: I18n.t("empty")
                                     color: Colors.foregroundMuted
                                     font.pixelSize: 10
                                     font.italic: true

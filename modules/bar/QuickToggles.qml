@@ -127,7 +127,7 @@ RowLayout {
     }
 
     Timer {
-        interval: 50
+        interval: SettingsState.volumePollInterval
         running: true
         repeat: true
         onTriggered: {

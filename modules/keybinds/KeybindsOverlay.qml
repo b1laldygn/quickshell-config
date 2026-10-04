@@ -33,22 +33,22 @@ Scope {
                     return combined.includes(query)
                 })
             }
-            property var groupedBinds: {
-                const categoryOrder = ["Uygulamalar", "Quickshell Araçları", "Sistem", "Pencere Yönetimi", "Çalışma Alanları", "Diğer"]
+                        property var groupedBinds: {
+                const categoryOrder = ["catApps", "catQuickshellTools", "catSystem", "catWindowManagement", "catWorkspaces", "catOther"]
                 const buckets = {}
                 for (const cat of categoryOrder) buckets[cat] = []
 
                 function categorize(b) {
                     const d = b.dispatcher
                     const a = b.args || ""
-                    if (d.startsWith("workspace") || d.startsWith("movetoworkspace")) return "Çalışma Alanları"
-                    if (["killactive", "exit", "fullscreen", "togglefloating", "movewindow", "resizewindow"].includes(d)) return "Pencere Yönetimi"
+                    if (d.startsWith("workspace") || d.startsWith("movetoworkspace")) return "catWorkspaces"
+                    if (["killactive", "exit", "fullscreen", "togglefloating", "movewindow", "resizewindow"].includes(d)) return "catWindowManagement"
                     if (d === "exec") {
-                        if (a.includes("ipc call")) return "Quickshell Araçları"
-                        if (a.includes("screenshot") || a.includes("hyprlock") || a.includes("pactl") || a.includes("brightnessctl")) return "Sistem"
-                        return "Uygulamalar"
+                        if (a.includes("ipc call")) return "catQuickshellTools"
+                        if (a.includes("screenshot") || a.includes("hyprlock") || a.includes("pactl") || a.includes("brightnessctl")) return "catSystem"
+                        return "catApps"
                     }
-                    return "Diğer"
+                    return "catOther"
                 }
 
                 for (const b of filteredBinds) {
@@ -93,7 +93,7 @@ Scope {
                         spacing: 10
 
                         Text {
-                            text: "Kısayollar"
+                            text: I18n.t("keybindsTitle")
                             color: "#F5F5F5"
                             font.pixelSize: 15
                             font.bold: true
@@ -123,7 +123,7 @@ Scope {
                                 anchors.left: parent.left
                                 anchors.leftMargin: 8
                                 anchors.verticalCenter: parent.verticalCenter
-                                text: "Ara..."
+                                text: I18n.t("searchPlaceholder")
                                 color: Colors.foregroundMuted
                                 font.pixelSize: 12
                                 visible: searchInput.text.length === 0
@@ -152,7 +152,7 @@ Scope {
                                         spacing: 8
 
                                         Text {
-                                            text: modelData.category
+                                            text: I18n.t(modelData.category)
                                             color: Colors.accent
                                             font.pixelSize: 12
                                             font.bold: true
@@ -218,7 +218,7 @@ Scope {
 
                                 Text {
                                     visible: overlayWindow.groupedBinds.length === 0
-                                    text: "Sonuç bulunamadı"
+                                    text: I18n.t("noResults")
                                     color: Colors.foregroundMuted
                                     font.pixelSize: 12
                                     font.italic: true

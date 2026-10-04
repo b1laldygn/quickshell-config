@@ -56,7 +56,7 @@ Scope {
                             Layout.fillWidth: true
 
                             Text {
-                                text: "Pano Geçmişi"
+                                text: I18n.t("clipboardTitle")
                                 color: "#F5F5F5"
                                 font.pixelSize: 15
                                 font.bold: true
@@ -64,7 +64,7 @@ Scope {
                             }
 
                             Text {
-                                text: "Tümünü sil"
+                                text: I18n.t("clearAll")
                                 color: Colors.danger
                                 font.pixelSize: 11
                                 visible: ClipboardState.entries.length > 0
@@ -101,7 +101,7 @@ Scope {
                                 anchors.left: parent.left
                                 anchors.leftMargin: 8
                                 anchors.verticalCenter: parent.verticalCenter
-                                text: "Ara..."
+                                text: I18n.t("searchPlaceholder")
                                 color: Colors.foregroundMuted
                                 font.pixelSize: 12
                                 visible: searchInput.text.length === 0
@@ -166,7 +166,7 @@ Scope {
                             Text {
                                 anchors.centerIn: parent
                                 visible: entryList.count === 0
-                                text: "Pano geçmişi boş"
+                                text: I18n.t("clipboardEmpty")
                                 color: Colors.foregroundMuted
                                 font.pixelSize: 12
                                 font.italic: true

@@ -136,7 +136,7 @@ Scope {
                                 anchors.left: parent.left
                                 anchors.leftMargin: 10
                                 anchors.verticalCenter: parent.verticalCenter
-                                text: "Uygulama ara..."
+                                text: I18n.t("appSearchPlaceholder")
                                 color: Colors.foregroundMuted
                                 font.pixelSize: 14
                                 visible: searchInput.text.length === 0
@@ -228,7 +228,7 @@ Scope {
                             Text {
                                 anchors.centerIn: parent
                                 visible: appList.count === 0
-                                text: "Sonuç bulunamadı"
+                                text: I18n.t("noResultsFound")
                                 color: Colors.foregroundMuted
                                 font.pixelSize: 12
                                 font.italic: true

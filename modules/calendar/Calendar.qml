@@ -48,10 +48,6 @@ Scope {
             WlrLayershell.layer: WlrLayer.Overlay
             WlrLayershell.exclusiveZone: -1
 
-            readonly property var monthNames: ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran",
-                                                "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"]
-            readonly property var dayNames: ["Pzt", "Sal", "Çrş", "Prş", "Cum", "Cmt", "Paz"]
-
             function buildDays(month, year) {
                 const firstOfMonth = new Date(year, month, 1)
                 const jsWeekday = firstOfMonth.getDay()
@@ -134,7 +130,7 @@ Scope {
                         }
 
                         Text {
-                            text: calWindow.monthNames[CalendarState.viewMonth] + " " + CalendarState.viewYear
+                            text: I18n.tArr("monthNames")[CalendarState.viewMonth] + " " + CalendarState.viewYear
                             color: "#F5F5F5"
                             font.pixelSize: 13
                             font.bold: true
@@ -178,7 +174,7 @@ Scope {
                             Repeater {
                                 model: 7
                                 Text {
-                                    text: calWindow.dayNames[index]
+                                    text: I18n.tArr("dayNames")[index]
                                     color: Colors.foregroundMuted
                                     font.pixelSize: 10
                                     font.bold: true

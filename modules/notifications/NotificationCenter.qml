@@ -42,7 +42,7 @@ Scope {
                         Layout.fillWidth: true
 
                         Text {
-                            text: "Notification History"
+                            text: I18n.t("notificationHistory")
                             color: "#F5F5F5"
                             font.pixelSize: 14
                             font.bold: true
@@ -50,7 +50,7 @@ Scope {
                         }
 
                         Text {
-                            text: "Clear All"
+                            text: I18n.t("clearAll")
                             color: Colors.foregroundMuted
                             font.pixelSize: 10
                             visible: NotificationService.history.length > 0
@@ -65,7 +65,7 @@ Scope {
 
                     Text {
                         visible: NotificationService.history.length === 0
-                        text: "No notifications"
+                        text: I18n.t("noNotifications")
                         color: Colors.foregroundMuted
                         font.pixelSize: 11
                         font.italic: true

@@ -119,7 +119,7 @@ QtObject {
 
     property Timer detailTimer: Timer {
         interval: 3000
-        running: root.panelVisible
+        running: root.panelVisible || SettingsState.showSystemWidget
         repeat: true
         triggeredOnStart: true
         onTriggered: root.detailProc.running = true

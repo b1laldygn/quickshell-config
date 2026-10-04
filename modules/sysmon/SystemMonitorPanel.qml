@@ -39,7 +39,7 @@ Scope {
                     spacing: 10
 
                     Text {
-                        text: "Sistem Durumu"
+                        text: I18n.t("systemStatus")
                         color: "#F5F5F5"
                         font.pixelSize: 14
                         font.bold: true
@@ -99,7 +99,7 @@ Scope {
                         Layout.topMargin: 4
 
                         Text {
-                            text: "Yük: " + SystemInfo.loadAvg
+                            text: I18n.t("loadAvg") + ": " + SystemInfo.loadAvg
                             color: Colors.foregroundMuted
                             font.pixelSize: 10
                             Layout.fillWidth: true
@@ -114,7 +114,7 @@ Scope {
 
                     // --- En çok CPU kullanan süreçler ---
                     Text {
-                        text: "En Yoğun Süreçler"
+                        text: I18n.t("topProcesses")
                         color: "#F5F5F5"
                         font.pixelSize: 11
                         font.bold: true

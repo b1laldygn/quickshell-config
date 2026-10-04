@@ -20,3 +20,7 @@ singleton AudioMixerState 1.0 AudioMixerState.qml
 singleton AltTabState 1.0 AltTabState.qml
 singleton WeatherState 1.0 WeatherState.qml
 singleton WeatherPanelState 1.0 WeatherPanelState.qml
+singleton SettingsState 1.0 SettingsState.qml
+singleton I18n 1.0 I18n.qml
+singleton WallpaperThumbs 1.0 WallpaperThumbs.qml
+singleton DesktopLayout 1.0 DesktopLayout.qml

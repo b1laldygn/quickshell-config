@@ -5,6 +5,7 @@ import QtQuick
 import QtQuick.Layouts
 import "root:/modules/bar"
 import "root:/config"
+import "root:/services"
 
 Scope {
     id: root
@@ -33,25 +34,46 @@ Scope {
                 spacing: 10
 
                 QuickToggles {}
-                BatteryIndicator {}
-                SystemMonitor {}
-                WeatherWidget {}
-                MediaControls {}
+
+                BatteryIndicator {
+                    visible: SettingsState.showBattery && Battery.available
+                }
+
+                SystemMonitor {
+                    visible: SettingsState.showSystemMonitor
+                }
+
+                WeatherWidget {
+                    visible: SettingsState.showWeather && WeatherState.loaded
+                }
+
+                MediaControls {
+                    id: mediaControls
+                    visible: SettingsState.showMediaControls && mediaControls.hasPlayer
+                }
             }
+
             // Orta: saat (mutlak ortalanmış)
             Clock {
                 anchors.centerIn: parent
             }
 
-            // Sağ: Sistem tepsisi (SysTray) ve Workspace'ler
+            // Sağ: bildirim zili, sistem tepsisi ve workspace'ler
             RowLayout {
                 anchors.right: parent.right
                 anchors.rightMargin: 12
                 anchors.verticalCenter: parent.verticalCenter
                 spacing: 12
 
-                NotificationBell {}
-                SysTray { trayWindow: bar }
+                NotificationBell {
+                    visible: SettingsState.showNotificationBell
+                }
+
+                SysTray {
+                    trayWindow: bar
+                    visible: SettingsState.showSysTray
+                }
+
                 Workspaces { screenName: bar.modelData.name }
             }
         }

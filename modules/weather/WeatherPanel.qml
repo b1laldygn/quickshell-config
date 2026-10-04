@@ -86,7 +86,7 @@ Scope {
                     RowLayout {
                         Layout.fillWidth: true
                         Text {
-                            text: "Hissedilen"
+                            text: I18n.t("feelsLike")
                             color: Colors.foregroundMuted
                             font.pixelSize: 11
                             Layout.fillWidth: true
@@ -101,7 +101,7 @@ Scope {
                     RowLayout {
                         Layout.fillWidth: true
                         Text {
-                            text: "Nem"
+                            text: I18n.t("humidity")
                             color: Colors.foregroundMuted
                             font.pixelSize: 11
                             Layout.fillWidth: true
@@ -116,7 +116,7 @@ Scope {
                     RowLayout {
                         Layout.fillWidth: true
                         Text {
-                            text: "Rüzgar"
+                            text: I18n.t("wind")
                             color: Colors.foregroundMuted
                             font.pixelSize: 11
                             Layout.fillWidth: true

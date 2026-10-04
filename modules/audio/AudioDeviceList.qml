@@ -119,7 +119,7 @@ Scope {
                             RowLayout {
                                 Layout.fillWidth: true
                                 Text {
-                                    text: "Ses Cihazları"
+                                    text: I18n.t("audioDevices")
                                     color: "#F5F5F5"
                                     font.pixelSize: 13
                                     font.bold: true
@@ -181,7 +181,7 @@ Scope {
                                         }
 
                                         Text {
-                                            text: AudioMixerState.masterMuted ? "Sessiz" : Math.round(volumeCard.localVolume * 100) + "%"
+                                            text: AudioMixerState.masterMuted ? I18n.t("muted") : Math.round(volumeCard.localVolume * 100) + "%"
                                             color: AudioMixerState.masterMuted ? Colors.danger : "#F5F5F5"
                                             font.pixelSize: 11
                                             Layout.fillWidth: true
@@ -225,7 +225,7 @@ Scope {
                             }
 
                             Text {
-                                text: "Çıkış"
+                                text: I18n.t("output")
                                 color: Colors.foregroundMuted
                                 font.pixelSize: 10
                                 font.bold: true
@@ -269,7 +269,7 @@ Scope {
                             }
 
                             Text {
-                                text: "Giriş (Mikrofon)"
+                                text: I18n.t("input")
                                 color: Colors.foregroundMuted
                                 font.pixelSize: 10
                                 font.bold: true
@@ -321,7 +321,7 @@ Scope {
                             }
 
                             Text {
-                                text: "Uygulama Sesleri"
+                                text: I18n.t("appVolumes")
                                 color: Colors.foregroundMuted
                                 font.pixelSize: 10
                                 font.bold: true
@@ -329,7 +329,7 @@ Scope {
 
                             Text {
                                 visible: AudioMixerState.streams.length === 0
-                                text: "Ses çalan uygulama yok"
+                                text: I18n.t("noAppsPlaying")
                                 color: Colors.foregroundMuted
                                 font.pixelSize: 11
                                 font.italic: true
@@ -373,7 +373,7 @@ Scope {
                                             }
 
                                             Text {
-                                                text: modelData.muted ? "Sessiz" : Math.round(streamCard.localVolume * 100) + "%"
+                                                text: modelData.muted ? I18n.t("muted") : Math.round(streamCard.localVolume * 100) + "%"
                                                 color: modelData.muted ? Colors.danger : Colors.foregroundMuted
                                                 font.pixelSize: 10
 

@@ -145,7 +145,7 @@ Scope {
                         RowLayout {
                             Layout.fillWidth: true
                             Text {
-                                text: "Wi-Fi Ağları"
+                                text: I18n.t("wifiNetworks")
                                 color: "#F5F5F5"
                                 font.pixelSize: 13
                                 font.bold: true
@@ -197,7 +197,7 @@ Scope {
                                         elide: Text.ElideRight
                                     }
                                     Text {
-                                        text: modelData.inUse ? "Bağlı" : ""
+                                        text: modelData.inUse ? I18n.t("connected") : ""
                                         color: Colors.foregroundMuted
                                         font.pixelSize: 10
                                         font.italic: true
@@ -243,7 +243,7 @@ Scope {
 
                             Text {
                                 visible: netWindow.connectFailed
-                                text: "Bağlanılamadı, şifreyi kontrol edin"
+                                text: I18n.t("connectFailedMessage")
                                 color: "#f38ba8"
                                 font.pixelSize: 10
                             }
@@ -266,7 +266,7 @@ Scope {
                                 }
 
                                 Text {
-                                    text: "Bağlan"
+                                    text: I18n.t("connect")
                                     color: Colors.accent
                                     font.pixelSize: 12
                                     MouseArea {

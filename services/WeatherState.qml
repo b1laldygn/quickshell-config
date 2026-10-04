@@ -55,7 +55,7 @@ QtObject {
     }
 
     property Timer refreshTimer: Timer {
-        interval: 1800000   // 30 dakika
+        interval: SettingsState.weatherRefreshMinutes * 60000
         running: true
         repeat: true
         triggeredOnStart: true

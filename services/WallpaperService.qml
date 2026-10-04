@@ -8,13 +8,8 @@ QtObject {
 
     property string currentWallpaperPath: ""
 
-    property Process applyProc: Process {
-        command: []
-    }
-
-    property Process saveProc: Process {
-        command: []
-    }
+    property Process applyProc: Process { command: [] }
+    property Process saveProc: Process { command: [] }
 
     property Process restoreProc: Process {
         command: []
@@ -28,12 +23,12 @@ QtObject {
         }
     }
 
-        function applyWallpaper(path) {
+    function applyWallpaper(path) {
         root.currentWallpaperPath = path
         applyProc.command = [
             "swww", "img", path,
-            "--transition-type", "fade",
-            "--transition-duration", "1"
+            "--transition-type", SettingsState.wallpaperTransition,
+            "--transition-duration", String(SettingsState.wallpaperTransitionDuration)
         ]
         applyProc.running = true
 
@@ -45,7 +40,7 @@ QtObject {
 
         saveProc.command = [
             "sh", "-c",
-            'mkdir -p "$HOME/.cache/quickshell" && printf "%s" "$1" > "$HOME/.cache/quickshell/last_wallpaper"',
+            'mkdir -p "$HOME/.cache/quickshell" && printf "%s" "$1" > "$HOME/.cache/quickshell/last_wallpaper" && ln -sf "$1" "$HOME/.cache/quickshell/last_wallpaper_resolved"',
             "_", path
         ]
         saveProc.running = true

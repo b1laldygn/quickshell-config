@@ -19,6 +19,8 @@ import "root:/modules/keybinds"
 import "root:/modules/mixer"
 import "root:/modules/alttab"
 import "root:/modules/weather"
+import "root:/modules/deskwidgets"
+import "root:/modules/settings"
 
 
 ShellRoot {
@@ -51,7 +53,14 @@ ShellRoot {
     AltTabOverlay {}
     AltTabIpc {}
     WeatherPanel {}
-
+    DesktopWidgets {}
+    Settings {}
+    SettingsIpc {}
+    DesktopWidgets {}
+    ClockWidget {}
+    SystemWidget {}
+    MediaWidget {}
+    CalendarWidget {}
     Timer {
         interval: 1500
         running: true
