@@ -18,7 +18,12 @@ QtObject {
     // ---- Tema ----
     property bool useDynamicTheme: true
     property string fixedAccentColor: "#89b4fa"
+    property string fixedBackgroundColor: "#1e1e2e"
     property string language: "tr"
+
+    // ---- Bar ----
+    property int barHeight: 34
+    property int barOpacity: 100
 
     // ---- Genel / performans ----
     property int volumePollInterval: 50
@@ -28,12 +33,13 @@ QtObject {
     // ---- Duvar kağıdı ----
     property string wallpaperTransition: "fade"
     property real wallpaperTransitionDuration: 1.0
+    property string wallpaperDir: "/home/bilal/Pictures/wallpaper"
 
     // ---- Masaüstü widget'ları ----
-    property bool showDesktopWidgets: true            // hava durumu kartı
+    property bool showDesktopWidgets: true
     property string desktopWidgetCorner: "top-right"
     property bool showClockWidget: true
-    property string clockStyle: "digital"             // "digital" | "analog"
+    property string clockStyle: "digital"
     property string clockWidgetCorner: "bottom-right"
     property bool showSystemWidget: true
     property string systemWidgetCorner: "top-left"
@@ -42,25 +48,46 @@ QtObject {
     property bool showCalendarWidget: false
     property string calendarWidgetCorner: "top-left"
 
+    // ---- Tarih ve saat ----
+    property bool use24h: true
+    property bool barClockSeconds: false
+    property bool deskClockSeconds: true
+    property string dateFormat: "long"       // long | medium | numeric | iso
+    property string weekStart: "mon"         // mon | sun
+
+    // ---- Bildirimler ----
+    property int notificationTimeout: 5
+    property int notificationHistoryLimit: 50
+
     property bool settingsVisible: false
     property bool loaded: false
 
     readonly property var persistedKeys: [
         "showWeather", "showSystemMonitor", "showMediaControls", "showBattery",
         "showNotificationBell", "showSysTray",
-        "useDynamicTheme", "fixedAccentColor", "language",
+        "useDynamicTheme", "fixedAccentColor", "fixedBackgroundColor", "language",
+        "barHeight", "barOpacity",
         "volumePollInterval", "brightnessPollInterval", "weatherRefreshMinutes",
-        "wallpaperTransition", "wallpaperTransitionDuration",
+        "wallpaperTransition", "wallpaperTransitionDuration", "wallpaperDir",
         "showDesktopWidgets", "desktopWidgetCorner",
         "showClockWidget", "clockStyle", "clockWidgetCorner",
         "showSystemWidget", "systemWidgetCorner",
         "showMediaWidget", "mediaWidgetCorner",
-        "showCalendarWidget", "calendarWidgetCorner"
+        "showCalendarWidget", "calendarWidgetCorner",
+        "use24h", "barClockSeconds", "deskClockSeconds", "dateFormat", "weekStart",
+        "notificationTimeout", "notificationHistoryLimit"
     ]
 
     property Process saveProc: Process { command: [] }
 
-    function save() {
+    property Timer saveDebounce: Timer {
+        interval: 400
+        onTriggered: root.writeToDisk()
+    }
+
+    function save() { saveDebounce.restart() }
+
+    function writeToDisk() {
         const data = {}
         for (const k of root.persistedKeys) data[k] = root[k]
         saveProc.command = [
@@ -85,23 +112,19 @@ QtObject {
                     } catch (e) {}
                 }
                 root.loaded = true
-                if (!root.useDynamicTheme) root.applyFixedAccent()
+                if (!root.useDynamicTheme) root.applyFixedTheme()
             }
         }
     }
 
-    function applyFixedAccent() {
+    function applyFixedTheme() {
+        const bg = root.fixedBackgroundColor
         const accent = root.fixedAccentColor
-        Colors.applyPalette({
-            background: Colors.background,
-            backgroundAlt: Colors.backgroundAlt,
-            foreground: Colors.foreground,
-            foregroundMuted: Colors.foregroundMuted,
-            accent: accent,
-            accentText: DynamicTheme.luminance(DynamicTheme.hexToRgb(accent)) > 140 ? "#111111" : "#ffffff",
-            hover: DynamicTheme.mix(Colors.background, accent, 0.15),
-            active: DynamicTheme.mix(Colors.background, accent, 0.28),
-            border: Colors.border
-        })
+        DynamicTheme.applyColors(
+            bg,
+            DynamicTheme.mix(bg, "#000000", 0.25),
+            DynamicTheme.mix("#ffffff", bg, 0.08),
+            accent
+        )
     }
 }

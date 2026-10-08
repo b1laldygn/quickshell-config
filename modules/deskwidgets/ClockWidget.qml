@@ -19,7 +19,8 @@ Scope {
 
             readonly property string corner: SettingsState.clockWidgetCorner
             readonly property bool isAnalog: SettingsState.clockStyle === "analog"
-            readonly property var dateLocale: Qt.locale(SettingsState.language === "en" ? "en_US" : "tr_TR")
+            readonly property bool showSecs: SettingsState.deskClockSeconds
+            readonly property real stackOffset: DesktopLayout.offsetFor("clock")
             property date now: new Date()
 
             anchors {
@@ -28,25 +29,25 @@ Scope {
                 left: corner.includes("left")
                 right: corner.includes("right")
             }
-            readonly property real stackOffset: DesktopLayout.offsetFor("clock")
-
             margins {
                 top: 60 + (corner.includes("top") ? stackOffset : 0)
                 bottom: 40 + (corner.includes("bottom") ? stackOffset : 0)
                 left: 30
                 right: 30
             }
+
             implicitWidth: isAnalog ? 210 : digitalCol.implicitWidth + 48
             implicitHeight: (isAnalog ? analogCol.implicitHeight : digitalCol.implicitHeight) + 32
-            function publish() { DesktopLayout.report("clock", visible ? implicitHeight : 0) }
-            onImplicitHeightChanged: publish()
-            onVisibleChanged: publish()
-            Component.onCompleted: publish()
             color: "transparent"
 
             WlrLayershell.layer: WlrLayer.Bottom
             WlrLayershell.exclusiveZone: -1
             WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
+
+            function publish() { DesktopLayout.report("clock", visible ? implicitHeight : 0) }
+            onImplicitHeightChanged: publish()
+            onVisibleChanged: publish()
+            Component.onCompleted: publish()
 
             Timer {
                 interval: 1000
@@ -71,27 +72,42 @@ Scope {
 
                     RowLayout {
                         Layout.alignment: Qt.AlignHCenter
-                        spacing: 4
+                        spacing: 6
 
                         Text {
-                            text: Qt.formatTime(clockWindow.now, "HH:mm")
+                            text: TimeFormat.hm(clockWindow.now)
                             color: "#F5F5F5"
                             font.pixelSize: 56
                             font.bold: true
                         }
 
-                        Text {
-                            text: Qt.formatTime(clockWindow.now, "ss")
-                            color: Colors.accent
-                            font.pixelSize: 22
-                            font.bold: true
+                        ColumnLayout {
+                            visible: clockWindow.showSecs || TimeFormat.suffix(clockWindow.now) !== ""
                             Layout.alignment: Qt.AlignBottom
                             Layout.bottomMargin: 10
+                            spacing: 0
+
+                            Text {
+                                visible: clockWindow.showSecs
+                                text: TimeFormat.seconds(clockWindow.now)
+                                color: Colors.accent
+                                font.pixelSize: 22
+                                font.bold: true
+                                Layout.preferredWidth: 34
+                            }
+
+                            Text {
+                                visible: text !== ""
+                                text: TimeFormat.suffix(clockWindow.now)
+                                color: Colors.foregroundMuted
+                                font.pixelSize: 14
+                                font.bold: true
+                            }
                         }
                     }
 
                     Text {
-                        text: clockWindow.dateLocale.toString(clockWindow.now, "dddd, d MMMM")
+                        text: TimeFormat.dateText(clockWindow.now)
                         color: Colors.foregroundMuted
                         font.pixelSize: 14
                         Layout.alignment: Qt.AlignHCenter
@@ -119,7 +135,6 @@ Scope {
                             border.width: 2
                         }
 
-                        // saat çizgileri
                         Repeater {
                             model: 12
 
@@ -138,7 +153,6 @@ Scope {
                             }
                         }
 
-                        // akrep
                         Item {
                             anchors.fill: parent
                             rotation: (clockWindow.now.getHours() % 12) * 30 + clockWindow.now.getMinutes() * 0.5
@@ -153,7 +167,6 @@ Scope {
                             }
                         }
 
-                        // yelkovan
                         Item {
                             anchors.fill: parent
                             rotation: clockWindow.now.getMinutes() * 6 + clockWindow.now.getSeconds() * 0.1
@@ -168,8 +181,8 @@ Scope {
                             }
                         }
 
-                        // saniye ibresi
                         Item {
+                            visible: clockWindow.showSecs
                             anchors.fill: parent
                             rotation: clockWindow.now.getSeconds() * 6
 
@@ -183,7 +196,6 @@ Scope {
                             }
                         }
 
-                        // orta başlık
                         Rectangle {
                             width: 10
                             height: 10
@@ -194,7 +206,7 @@ Scope {
                     }
 
                     Text {
-                        text: clockWindow.dateLocale.toString(clockWindow.now, "dddd, d MMMM")
+                        text: TimeFormat.dateText(clockWindow.now)
                         color: Colors.foregroundMuted
                         font.pixelSize: 12
                         Layout.alignment: Qt.AlignHCenter

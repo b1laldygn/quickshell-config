@@ -9,7 +9,7 @@ QtObject {
     property var notifications: []
     property var history: []
     property int unreadCount: 0
-    property int maxHistory: 50
+    property int maxHistory: SettingsState.notificationHistoryLimit
     property bool centerVisible: false
 
     signal notificationAdded(var notification)

@@ -12,7 +12,7 @@ Scope {
     readonly property var cells: buildDays(now.getMonth(), now.getFullYear())
 
     function buildDays(month, year) {
-        const leadCount = (new Date(year, month, 1).getDay() + 6) % 7
+        const leadCount = TimeFormat.leadDays(new Date(year, month, 1).getDay())
         const daysInMonth = new Date(year, month + 1, 0).getDate()
         const daysInPrev = new Date(year, month, 0).getDate()
         const today = new Date()
@@ -66,7 +66,7 @@ Scope {
                     model: 7
 
                     Text {
-                        text: I18n.tArr("dayNames")[index]
+                        text: TimeFormat.weekdayLabel(index)
                         color: Colors.foregroundMuted
                         font.pixelSize: 9
                         font.bold: true

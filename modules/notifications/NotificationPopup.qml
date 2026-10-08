@@ -19,7 +19,7 @@ Rectangle {
     Timer {
         running: card.notification && card.notification.urgency !== 2 // 2 = Critical
         interval: card.notification && card.notification.expireTimeout > 0
-                ? card.notification.expireTimeout : 5000
+                    ? card.notification.expireTimeout : SettingsState.notificationTimeout * 1000
         onTriggered: NotificationService.dismiss(card.notification.id)
     }
 

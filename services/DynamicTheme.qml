@@ -3,7 +3,7 @@ pragma Singleton
 import QtQuick
 import Quickshell.Io
 import "root:/config"
-import "root:/services"
+
 QtObject {
     id: root
 
@@ -69,6 +69,49 @@ QtObject {
         return "#" + toHex(r) + toHex(g) + toHex(b)
     }
 
+    // Verilen 4 renkten shell + terminal temasının tamamını uygular
+    function applyColors(background, backgroundAlt, foreground, accent) {
+        const accentLum = root.luminance(root.hexToRgb(accent))
+
+        Colors.applyPalette({
+            background: background,
+            backgroundAlt: backgroundAlt,
+            foreground: foreground,
+            foregroundMuted: root.mix(foreground, background, 0.4),
+            accent: accent,
+            accentText: accentLum > 140 ? "#111111" : "#ffffff",
+            hover: root.mix(background, accent, 0.15),
+            active: root.mix(background, accent, 0.28),
+            border: root.mix(background, "#ffffff", 0.12)
+        })
+
+        const accentHsl = root.rgbToHsl(root.hexToRgb(accent))
+        const sat = Math.max(40, Math.min(70, accentHsl.s))
+        const dimLight = 45
+        const brightLight = 65
+
+        root.writeFootTheme({
+            background: background,
+            foreground: root.mix(foreground, "#ffffff", 0.1),
+            color0: root.mix(background, "#000000", 0.4),
+            color1: root.hslToHex(0, sat, dimLight),
+            color2: root.hslToHex(120, sat, dimLight),
+            color3: root.hslToHex(60, sat, dimLight),
+            color4: root.hslToHex(240, sat, dimLight),
+            color5: root.hslToHex(300, sat, dimLight),
+            color6: root.hslToHex(180, sat, dimLight),
+            color7: root.mix(foreground, "#ffffff", 0.15),
+            color8: root.mix(background, "#ffffff", 0.25),
+            color9: root.hslToHex(0, sat, brightLight),
+            color10: root.hslToHex(120, sat, brightLight),
+            color11: root.hslToHex(60, sat, brightLight),
+            color12: root.hslToHex(240, sat, brightLight),
+            color13: root.hslToHex(300, sat, brightLight),
+            color14: root.hslToHex(180, sat, brightLight),
+            color15: root.mix(foreground, "#ffffff", 0.7)
+        })
+    }
+
     property Process extractProc: Process {
         command: []
         stdout: StdioCollector {
@@ -89,55 +132,12 @@ QtObject {
                 const lightest = withLum[withLum.length - 1].hex
                 const mostSaturated = withLum.reduce((max, c) => c.sat > max.sat ? c : max, withLum[0])
 
-                const background = root.mix(darkest, "#000000", 0.2)
-                const backgroundAlt = root.mix(darkest, "#000000", 0.35)
-                const foreground = root.mix(lightest, "#ffffff", 0.35)
-                const accent = mostSaturated.hex
-                const accentLum = root.luminance(root.hexToRgb(accent))
-                const accentText = accentLum > 140 ? "#111111" : "#ffffff"
-                const hover = root.mix(background, accent, 0.15)
-                const active = root.mix(background, accent, 0.28)
-                const border = root.mix(background, "#ffffff", 0.12)
-
-                Colors.applyPalette({
-                    background: background,
-                    backgroundAlt: backgroundAlt,
-                    foreground: foreground,
-                    foregroundMuted: root.mix(foreground, background, 0.4),
-                    accent: accent,
-                    accentText: accentText,
-                    hover: hover,
-                    active: active,
-                    border: border
-                })
-
-                const accentHsl = root.rgbToHsl(root.hexToRgb(accent))
-                const sat = Math.max(40, Math.min(70, accentHsl.s))
-                const dimLight = 45
-                const brightLight = 65
-
-                const footColors = {
-                    background: background,
-                    foreground: root.mix(foreground, "#ffffff", 0.1),
-                    color0: root.mix(background, "#000000", 0.4),
-                    color1: root.hslToHex(0, sat, dimLight),
-                    color2: root.hslToHex(120, sat, dimLight),
-                    color3: root.hslToHex(60, sat, dimLight),
-                    color4: root.hslToHex(240, sat, dimLight),
-                    color5: root.hslToHex(300, sat, dimLight),
-                    color6: root.hslToHex(180, sat, dimLight),
-                    color7: root.mix(foreground, "#ffffff", 0.15),
-                    color8: root.mix(background, "#ffffff", 0.25),
-                    color9: root.hslToHex(0, sat, brightLight),
-                    color10: root.hslToHex(120, sat, brightLight),
-                    color11: root.hslToHex(60, sat, brightLight),
-                    color12: root.hslToHex(240, sat, brightLight),
-                    color13: root.hslToHex(300, sat, brightLight),
-                    color14: root.hslToHex(180, sat, brightLight),
-                    color15: root.mix(foreground, "#ffffff", 0.7)
-                }
-
-                root.writeFootTheme(footColors)
+                root.applyColors(
+                    root.mix(darkest, "#000000", 0.2),
+                    root.mix(darkest, "#000000", 0.35),
+                    root.mix(lightest, "#ffffff", 0.35),
+                    mostSaturated.hex
+                )
             }
         }
     }
@@ -147,32 +147,51 @@ QtObject {
         extractProc.running = true
     }
 
+    // ---- foot terminal ----
+    property var pendingFoot: null
     property Process footWriteProc: Process { command: [] }
     property Process footReloadProc: Process { command: ["pkill", "-SIGUSR1", "foot"] }
 
+    property Timer footDebounce: Timer {
+        interval: 300
+        onTriggered: root.flushFootTheme()
+    }
+
+    property Timer footReloadDelay: Timer {
+        interval: 200
+        onTriggered: footReloadProc.running = true
+    }
+
     function writeFootTheme(c) {
-        const stripHash = (hex) => hex.replace("#", "")
+        root.pendingFoot = c
+        footDebounce.restart()
+    }
+
+    function flushFootTheme() {
+        const c = root.pendingFoot
+        if (!c) return
+        const strip = (hex) => hex.replace("#", "")
 
         const iniContent =
             "[colors]\n" +
-            "background=" + stripHash(c.background) + "\n" +
-            "foreground=" + stripHash(c.foreground) + "\n" +
-            "regular0=" + stripHash(c.color0) + "\n" +
-            "regular1=" + stripHash(c.color1) + "\n" +
-            "regular2=" + stripHash(c.color2) + "\n" +
-            "regular3=" + stripHash(c.color3) + "\n" +
-            "regular4=" + stripHash(c.color4) + "\n" +
-            "regular5=" + stripHash(c.color5) + "\n" +
-            "regular6=" + stripHash(c.color6) + "\n" +
-            "regular7=" + stripHash(c.color7) + "\n" +
-            "bright0=" + stripHash(c.color8) + "\n" +
-            "bright1=" + stripHash(c.color9) + "\n" +
-            "bright2=" + stripHash(c.color10) + "\n" +
-            "bright3=" + stripHash(c.color11) + "\n" +
-            "bright4=" + stripHash(c.color12) + "\n" +
-            "bright5=" + stripHash(c.color13) + "\n" +
-            "bright6=" + stripHash(c.color14) + "\n" +
-            "bright7=" + stripHash(c.color15) + "\n"
+            "background=" + strip(c.background) + "\n" +
+            "foreground=" + strip(c.foreground) + "\n" +
+            "regular0=" + strip(c.color0) + "\n" +
+            "regular1=" + strip(c.color1) + "\n" +
+            "regular2=" + strip(c.color2) + "\n" +
+            "regular3=" + strip(c.color3) + "\n" +
+            "regular4=" + strip(c.color4) + "\n" +
+            "regular5=" + strip(c.color5) + "\n" +
+            "regular6=" + strip(c.color6) + "\n" +
+            "regular7=" + strip(c.color7) + "\n" +
+            "bright0=" + strip(c.color8) + "\n" +
+            "bright1=" + strip(c.color9) + "\n" +
+            "bright2=" + strip(c.color10) + "\n" +
+            "bright3=" + strip(c.color11) + "\n" +
+            "bright4=" + strip(c.color12) + "\n" +
+            "bright5=" + strip(c.color13) + "\n" +
+            "bright6=" + strip(c.color14) + "\n" +
+            "bright7=" + strip(c.color15) + "\n"
 
         footWriteProc.command = [
             "sh", "-c",
@@ -180,10 +199,5 @@ QtObject {
         ]
         footWriteProc.running = true
         footReloadDelay.restart()
-    }
-
-    property Timer footReloadDelay: Timer {
-        interval: 200
-        onTriggered: footReloadProc.running = true
     }
 }

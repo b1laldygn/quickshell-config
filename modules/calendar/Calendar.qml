@@ -51,7 +51,7 @@ Scope {
             function buildDays(month, year) {
                 const firstOfMonth = new Date(year, month, 1)
                 const jsWeekday = firstOfMonth.getDay()
-                const leadCount = (jsWeekday + 6) % 7
+                const leadCount = TimeFormat.leadDays(jsWeekday)
                 const daysInMonth = new Date(year, month + 1, 0).getDate()
                 const daysInPrevMonth = new Date(year, month, 0).getDate()
 
@@ -174,7 +174,7 @@ Scope {
                             Repeater {
                                 model: 7
                                 Text {
-                                    text: I18n.tArr("dayNames")[index]
+                                    text: TimeFormat.weekdayLabel(index)
                                     color: Colors.foregroundMuted
                                     font.pixelSize: 10
                                     font.bold: true

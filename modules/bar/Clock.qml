@@ -1,20 +1,23 @@
+// modules/bar/Clock.qml
 import QtQuick
-import Quickshell.Io
 import "root:/services"
 
 Item {
     id: root
-    implicitWidth: clockText.implicitWidth
-    implicitHeight: clockText.implicitHeight
 
-    property string time: ""
+    property date now: new Date()
+    property real maxW: 0
+
+    implicitWidth: Math.max(maxW, clockText.implicitWidth)
+    implicitHeight: clockText.implicitHeight
 
     Text {
         id: clockText
         anchors.centerIn: parent
-        text: root.time
+        text: TimeFormat.full(root.now, SettingsState.barClockSeconds)
         color: "#cdd6f4"
         font.pixelSize: 13
+        onImplicitWidthChanged: if (implicitWidth > root.maxW) root.maxW = implicitWidth
     }
 
     MouseArea {
@@ -23,19 +26,10 @@ Item {
         onClicked: CalendarState.toggle()
     }
 
-    Process {
-        id: dateProc
-        command: ["date", "+%H:%M"]
-        running: true
-        stdout: StdioCollector {
-            onStreamFinished: root.time = this.text.trim()
-        }
-    }
-
     Timer {
-        interval: 30000
+        interval: 1000
         running: true
         repeat: true
-        onTriggered: dateProc.running = true
+        onTriggered: root.now = new Date()
     }
 }

@@ -24,3 +24,5 @@ singleton SettingsState 1.0 SettingsState.qml
 singleton I18n 1.0 I18n.qml
 singleton WallpaperThumbs 1.0 WallpaperThumbs.qml
 singleton DesktopLayout 1.0 DesktopLayout.qml
+singleton TimeFormat 1.0 TimeFormat.qml
+singleton TimeSettings 1.0 TimeSettings.qml

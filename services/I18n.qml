@@ -1,7 +1,6 @@
 // services/I18n.qml
 pragma Singleton
 import QtQuick
-import "root:/services"
 
 QtObject {
     id: root
@@ -9,8 +8,17 @@ QtObject {
     readonly property var strings: ({
         tr: {
             settings: "Ayarlar",
+            tabAppearance: "Görünüm",
+            tabDesktop: "Masaüstü",
+            tabDateTime: "Tarih ve Saat",
             theme: "Tema",
             dynamicTheme: "Duvar kağıdından otomatik tema",
+            accentColor: "Vurgu Rengi",
+            backgroundColor: "Arka Plan Rengi",
+            darkOnlyHint: "Okunabilirlik için sadece koyu tonlar seçilebilir",
+            barAppearance: "Bar Görünümü",
+            barHeight: "Bar Yüksekliği (px)",
+            barOpacity: "Bar Şeffaflığı (%)",
             barWidgets: "Bar Widget'ları",
             desktopWidgets: "Masaüstü Widget'ları",
             general: "Genel",
@@ -65,8 +73,9 @@ QtObject {
             catWorkspaces: "Çalışma Alanları",
             catOther: "Diğer",
             monthNames: ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran",
-                        "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"],
+                         "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"],
             dayNames: ["Pzt", "Sal", "Çrş", "Prş", "Cum", "Cmt", "Paz"],
+            dayNamesLong: ["Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi", "Pazar"],
             weatherCard: "Hava Durumu Kartı",
             clockWidget: "Saat Widget'ı",
             clockStyle: "Saat Stili",
@@ -88,12 +97,44 @@ QtObject {
             systemWidget: "Sistem Durumu Kartı",
             mediaWidget: "Müzik Kartı",
             calendarWidget: "Takvim Kartı",
-            nowPlaying: "Şu an çalıyor"            
+            nowPlaying: "Şu an çalıyor",
+            wallpaperSection: "Duvar Kağıdı",
+            wallpaperFolder: "Duvar kağıdı klasörü (Enter ile uygula)",
+            apply: "Uygula",
+            folderNotFound: "Klasör bulunamadı",
+            imagesFound: "resim bulundu",
+            timeSection: "Saat ve Tarih",
+            timeFormat: "Saat Biçimi",
+            hour24: "24 saat",
+            hour12: "12 saat (AM/PM)",
+            barClockSeconds: "Bar saatinde saniyeyi göster",
+            deskClockSeconds: "Masaüstü saatinde saniyeyi göster",
+            dateFormat: "Tarih Biçimi",
+            weekStart: "Haftanın İlk Günü",
+            monday: "Pazartesi",
+            sunday: "Pazar",
+            timezone: "Saat Dilimi",
+            currentLabel: "Şu anki",
+            searchTimezone: "Saat dilimi ara (örn. Istanbul)",
+            autoTime: "Otomatik saat (NTP)",
+            polkitHint: "Yetki penceresi açılmadıysa bir polkit ajanı (örn. policykit-1-gnome) çalıştırman gerekebilir.",
+            notifTimeout: "Bildirim süresi (sn)",
+            notifTimeoutHint: "Uygulama kendi süresini belirtmediyse kullanılır",
+            notifHistoryLimit: "Geçmiş limiti (adet)"
         },
         en: {
             settings: "Settings",
+            tabAppearance: "Appearance",
+            tabDesktop: "Desktop",
+            tabDateTime: "Date & Time",
             theme: "Theme",
             dynamicTheme: "Automatic theme from wallpaper",
+            accentColor: "Accent Color",
+            backgroundColor: "Background Color",
+            darkOnlyHint: "Only dark tones are allowed for readability",
+            barAppearance: "Bar Appearance",
+            barHeight: "Bar Height (px)",
+            barOpacity: "Bar Opacity (%)",
             barWidgets: "Bar Widgets",
             desktopWidgets: "Desktop Widgets",
             general: "General",
@@ -148,8 +189,9 @@ QtObject {
             catWorkspaces: "Workspaces",
             catOther: "Other",
             monthNames: ["January", "February", "March", "April", "May", "June",
-                        "July", "August", "September", "October", "November", "December"],
+                         "July", "August", "September", "October", "November", "December"],
             dayNames: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+            dayNamesLong: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
             weatherCard: "Weather Card",
             clockWidget: "Clock Widget",
             clockStyle: "Clock Style",
@@ -171,7 +213,30 @@ QtObject {
             systemWidget: "System Status Card",
             mediaWidget: "Now Playing Card",
             calendarWidget: "Calendar Card",
-            nowPlaying: "Now Playing"
+            nowPlaying: "Now Playing",
+            wallpaperSection: "Wallpaper",
+            wallpaperFolder: "Wallpaper folder (press Enter to apply)",
+            apply: "Apply",
+            folderNotFound: "Folder not found",
+            imagesFound: "images found",
+            timeSection: "Time & Date",
+            timeFormat: "Time Format",
+            hour24: "24-hour",
+            hour12: "12-hour (AM/PM)",
+            barClockSeconds: "Show seconds on bar clock",
+            deskClockSeconds: "Show seconds on desktop clock",
+            dateFormat: "Date Format",
+            weekStart: "First Day of the Week",
+            monday: "Monday",
+            sunday: "Sunday",
+            timezone: "Time Zone",
+            currentLabel: "Current",
+            searchTimezone: "Search time zone (e.g. Istanbul)",
+            autoTime: "Automatic time (NTP)",
+            polkitHint: "If no authentication prompt appeared, you may need a polkit agent running (e.g. policykit-1-gnome).",
+            notifTimeout: "Notification duration (s)",
+            notifTimeoutHint: "Used when the app doesn't specify its own duration",
+            notifHistoryLimit: "History limit (items)"
         }
     })
 
@@ -180,6 +245,7 @@ QtObject {
         const table = root.strings[lang] || root.strings.tr
         return table[key] !== undefined ? table[key] : key
     }
+
     function tArr(key) {
         const lang = SettingsState.language || "tr"
         const table = root.strings[lang] || root.strings.tr

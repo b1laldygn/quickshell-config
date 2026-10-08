@@ -23,8 +23,8 @@ Scope {
                 left: true
                 right: true
             }
-            implicitHeight: 34
-            color: Colors.background
+            implicitHeight: SettingsState.barHeight
+            color: Qt.rgba(Colors.background.r, Colors.background.g, Colors.background.b, SettingsState.barOpacity / 100)
 
             // Sol: hızlı erişim ikonları + batarya
             RowLayout {
