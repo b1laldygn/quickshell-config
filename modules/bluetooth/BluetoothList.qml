@@ -1,3 +1,4 @@
+// modules/bluetooth/BluetoothList.qml
 import Quickshell
 import Quickshell.Wayland
 import Quickshell.Io
@@ -51,18 +52,18 @@ Scope {
             }
 
             Process {
-    id: connectedProc
-    command: ["bluetoothctl", "devices", "Connected"]
-    stdout: StdioCollector {
-        onStreamFinished: {
-            const lines = this.text.trim().split("\n").filter(l => l.length > 0)
-            const connectedMacs = new Set(lines.map(l => l.split(" ")[1]))
-            btWindow.devices = btWindow.devices.map(d => {
-                return { mac: d.mac, name: d.name, connected: connectedMacs.has(d.mac) }
-            })
-        }
-    }
-}
+                id: connectedProc
+                command: ["bluetoothctl", "devices", "Connected"]
+                stdout: StdioCollector {
+                    onStreamFinished: {
+                        const lines = this.text.trim().split("\n").filter(l => l.length > 0)
+                        const connectedMacs = new Set(lines.map(l => l.split(" ")[1]))
+                        btWindow.devices = btWindow.devices.map(d => {
+                            return { mac: d.mac, name: d.name, connected: connectedMacs.has(d.mac) }
+                        })
+                    }
+                }
+            }
 
             Process {
                 id: actionProc
@@ -83,12 +84,12 @@ Scope {
             Item {
                 anchors.fill: parent
                 focus: btWindow.visible
-                Keys.onEscapePressed: BluetoothListState.visible = false   // önce: btWindow.visible = false
+                Keys.onEscapePressed: BluetoothListState.visible = false
 
                 MouseArea {
                     anchors.fill: parent
-                    onClicked: BluetoothListState.visible = false           // önce: btWindow.visible = false
-    }
+                    onClicked: BluetoothListState.visible = false
+                }
 
                 Rectangle {
                     anchors.top: parent.top
@@ -194,7 +195,7 @@ Scope {
                                             Layout.fillWidth: true
                                         }
                                         Text {
-                                            text: modelData.connected ? "Bağlı" : "Bağlı değil"
+                                            text: modelData.connected ? I18n.t("connected") : I18n.t("notConnected")
                                             color: Colors.foregroundMuted
                                             font.pixelSize: 10
                                         }
@@ -221,7 +222,7 @@ Scope {
                             Text {
                                 anchors.centerIn: parent
                                 visible: listView.count === 0
-                                text: "Eşlenmiş cihaz yok"
+                                text: I18n.t("noPairedDevices")
                                 color: Colors.foregroundMuted
                                 font.pixelSize: 12
                                 font.italic: true

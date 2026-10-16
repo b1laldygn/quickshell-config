@@ -52,12 +52,20 @@ QtObject {
     property bool use24h: true
     property bool barClockSeconds: false
     property bool deskClockSeconds: true
-    property string dateFormat: "long"       // long | medium | numeric | iso
-    property string weekStart: "mon"         // mon | sun
+    property string dateFormat: "long"
+    property string weekStart: "mon"
 
     // ---- Bildirimler ----
     property int notificationTimeout: 5
     property int notificationHistoryLimit: 50
+
+    // ---- Overview ----
+    property int overviewWorkspaceCount: 10
+    property int overviewColumns: 5
+    property int overviewCellWidth: 220
+    property bool overviewHideEmpty: false
+    property bool overviewLivePreview: true
+    property bool overviewShowCaption: true
 
     property bool settingsVisible: false
     property bool loaded: false
@@ -75,7 +83,9 @@ QtObject {
         "showMediaWidget", "mediaWidgetCorner",
         "showCalendarWidget", "calendarWidgetCorner",
         "use24h", "barClockSeconds", "deskClockSeconds", "dateFormat", "weekStart",
-        "notificationTimeout", "notificationHistoryLimit"
+        "notificationTimeout", "notificationHistoryLimit",
+        "overviewWorkspaceCount", "overviewColumns", "overviewCellWidth",
+        "overviewHideEmpty", "overviewLivePreview", "overviewShowCaption"
     ]
 
     property Process saveProc: Process { command: [] }

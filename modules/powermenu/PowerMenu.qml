@@ -1,3 +1,4 @@
+// modules/powermenu/PowerMenu.qml
 import Quickshell
 import Quickshell.Wayland
 import Quickshell.Io
@@ -36,15 +37,13 @@ Scope {
                     anchors.centerIn: parent
                     spacing: 20
 
-                    //MouseArea { anchors.fill: parent; onClicked: {} } // dummy to eat clicks — bkz. not
-
                     Repeater {
                         model: [
-                            { icon: "󰤄", label: "Kilitle",    cmd: ["hyprlock"] },
-                            { icon: "󰤁", label: "Uyku",       cmd: ["systemctl", "suspend"] },
-                            { icon: "󰑐", label: "Yeniden Başlat", cmd: ["systemctl", "reboot"] },
-                            { icon: "󰐥", label: "Kapat",      cmd: ["systemctl", "poweroff"] },
-                            { icon: "󰍃", label: "Çıkış Yap",  cmd: ["hyprctl", "dispatch", "exit"] }
+                            { icon: "󰤄", label: I18n.t("powerLock"),     cmd: ["hyprlock"] },
+                            { icon: "󰤁", label: I18n.t("powerSleep"),    cmd: ["systemctl", "suspend"] },
+                            { icon: "󰑐", label: I18n.t("powerRestart"),  cmd: ["systemctl", "reboot"] },
+                            { icon: "󰐥", label: I18n.t("powerShutdown"), cmd: ["systemctl", "poweroff"] },
+                            { icon: "󰍃", label: I18n.t("powerLogout"),   cmd: ["hyprctl", "dispatch", "exit"] }
                         ]
 
                         delegate: Rectangle {

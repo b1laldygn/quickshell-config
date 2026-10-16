@@ -82,11 +82,11 @@ Scope {
             Item {
                 anchors.fill: parent
                 focus: audioWindow.visible
-                Keys.onEscapePressed: audioWindow.visible = false
+                Keys.onEscapePressed: AudioDeviceListState.visible = false
 
                 MouseArea {
                     anchors.fill: parent
-                    onClicked: audioWindow.visible = false
+                    onClicked: AudioDeviceListState.visible = false
                 }
 
                 Rectangle {

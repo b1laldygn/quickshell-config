@@ -36,9 +36,9 @@ Scope {
                 { key: "appearance", label: I18n.t("tabAppearance") },
                 { key: "desktop", label: I18n.t("tabDesktop") },
                 { key: "datetime", label: I18n.t("tabDateTime") },
+                { key: "overview", label: I18n.t("tabOverview") },
                 { key: "notifications", label: I18n.t("notificationsTitle") },
-                { key: "general", label: I18n.t("general") }
-            ]
+                { key: "general", label: I18n.t("general") }            ]
             property var cornerOptions: [
                 { label: I18n.t("topLeft"), key: "top-left" },
                 { label: I18n.t("topRight"), key: "top-right" },
@@ -1001,7 +1001,65 @@ Scope {
                                         }
                                     }
                                 }
+// =============== GENEL BAKIŞ ===============
+                                ColumnLayout {
+                                    Layout.fillWidth: true
+                                    visible: settingsWindow.tab === "overview"
+                                    spacing: 14
 
+                                    SectionTitle { text: I18n.t("overviewSection") }
+
+                                    StepperRow {
+                                        label: I18n.t("overviewWorkspaceCount")
+                                        settingKey: "overviewWorkspaceCount"
+                                        minValue: 3
+                                        maxValue: 10
+                                        stepValue: 1
+                                    }
+
+                                    StepperRow {
+                                        label: I18n.t("overviewColumns")
+                                        settingKey: "overviewColumns"
+                                        minValue: 2
+                                        maxValue: 5
+                                        stepValue: 1
+                                    }
+
+                                    StepperRow {
+                                        label: I18n.t("overviewCellWidth")
+                                        settingKey: "overviewCellWidth"
+                                        minValue: 160
+                                        maxValue: 300
+                                        stepValue: 20
+                                    }
+
+                                    ToggleRow {
+                                        label: I18n.t("overviewHideEmpty")
+                                        checked: SettingsState.overviewHideEmpty
+                                        onToggled: {
+                                            SettingsState.overviewHideEmpty = !SettingsState.overviewHideEmpty
+                                            SettingsState.save()
+                                        }
+                                    }
+
+                                    ToggleRow {
+                                        label: I18n.t("overviewLivePreview")
+                                        checked: SettingsState.overviewLivePreview
+                                        onToggled: {
+                                            SettingsState.overviewLivePreview = !SettingsState.overviewLivePreview
+                                            SettingsState.save()
+                                        }
+                                    }
+
+                                    ToggleRow {
+                                        label: I18n.t("overviewShowCaption")
+                                        checked: SettingsState.overviewShowCaption
+                                        onToggled: {
+                                            SettingsState.overviewShowCaption = !SettingsState.overviewShowCaption
+                                            SettingsState.save()
+                                        }
+                                    }
+                                }
                                 // =============== BİLDİRİMLER ===============
                                 ColumnLayout {
                                     Layout.fillWidth: true

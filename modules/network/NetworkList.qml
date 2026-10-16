@@ -116,11 +116,11 @@ Scope {
             Item {
                 anchors.fill: parent
                 focus: netWindow.visible
-                Keys.onEscapePressed: netWindow.visible = false
+                Keys.onEscapePressed: NetworkState.visible = false
 
                 MouseArea {
                     anchors.fill: parent
-                    onClicked: netWindow.visible = false
+                    onClicked: NetworkState.visible = false
     }
 
                 Rectangle {
