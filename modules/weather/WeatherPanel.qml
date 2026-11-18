@@ -5,6 +5,7 @@ import QtQuick
 import QtQuick.Layouts
 import "root:/config"
 import "root:/services"
+import "root:/modules/common"
 
 Scope {
     Variants {
@@ -14,7 +15,12 @@ Scope {
             property var modelData
             screen: modelData
 
-            visible: WeatherPanelState.visible
+            visible: fx.shown
+
+            PopupFx {
+                id: fx
+                open: WeatherPanelState.visible
+            }
 
             anchors { top: true; left: true }
             margins {
@@ -32,6 +38,10 @@ Scope {
             Rectangle {
                 anchors.fill: parent
                 radius: 12
+                opacity: fx.cardOpacity
+                scale: fx.cardScale
+                transformOrigin: Item.Top
+                transform: Translate { y: fx.cardY }
                 color: Colors.backgroundAlt
                 border.color: Colors.border
                 border.width: 1

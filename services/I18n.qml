@@ -140,8 +140,15 @@ QtObject {
             menuClose: "Pencereyi kapat",
             menuMoveTo: "Şuraya taşı",
             workspaceWord: "Çalışma Alanı",
-            windowsUnit: "pencere"
-        },
+            windowsUnit: "pencere",
+            popupAnimSection: "Açılır Pencere Animasyonu",
+            popupAnimDuration: "Animasyon süresi (ms)",
+            animNone: "Yok",
+            animFade: "Solma",
+            animSlide: "Yukarıdan kayma",
+            animScale: "Büyüme",
+            animPop: "Zıplama",
+            animDrop: "Düşme (sekmeli)"        },
         en: {
             settings: "Settings",
             tabAppearance: "Appearance",
@@ -276,8 +283,15 @@ QtObject {
             menuClose: "Close window",
             menuMoveTo: "Move to workspace",
             workspaceWord: "Workspace",
-            windowsUnit: "windows"
-        }
+            windowsUnit: "windows",
+            popupAnimSection: "Pop-up Animation",
+            popupAnimDuration: "Animation duration (ms)",
+            animNone: "None",
+            animFade: "Fade",
+            animSlide: "Slide down",
+            animScale: "Grow",
+            animPop: "Pop",
+            animDrop: "Drop (bounce)"        }
     })
 
     function t(key) {

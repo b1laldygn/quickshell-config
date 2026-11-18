@@ -63,6 +63,14 @@ Scope {
                 { key: "numeric", label: TimeFormat.dateTextFor(new Date(), "numeric") },
                 { key: "iso", label: TimeFormat.dateTextFor(new Date(), "iso") }
             ]
+            property var popupAnimOptions: [
+                { label: I18n.t("animNone"), key: "none" },
+                { label: I18n.t("animFade"), key: "fade" },
+                { label: I18n.t("animSlide"), key: "slide" },
+                { label: I18n.t("animScale"), key: "scale" },
+                { label: I18n.t("animPop"), key: "pop" },
+                { label: I18n.t("animDrop"), key: "drop" }
+            ]
             property var weekStartOptions: [
                 { label: I18n.t("monday"), key: "mon" },
                 { label: I18n.t("sunday"), key: "sun" }
@@ -1102,6 +1110,27 @@ Scope {
                                             SettingsState.language = key
                                             SettingsState.save()
                                         }
+                                    }
+
+                                    Divider {}
+
+                                    SectionTitle { text: I18n.t("popupAnimSection") }
+
+                                    ChoiceRow {
+                                        options: settingsWindow.popupAnimOptions
+                                        current: SettingsState.popupAnimation
+                                        onChosen: (key) => {
+                                            SettingsState.popupAnimation = key
+                                            SettingsState.save()
+                                        }
+                                    }
+
+                                    StepperRow {
+                                        label: I18n.t("popupAnimDuration")
+                                        settingKey: "popupAnimDuration"
+                                        minValue: 80
+                                        maxValue: 500
+                                        stepValue: 20
                                     }
 
                                     Divider {}

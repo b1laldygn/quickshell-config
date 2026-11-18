@@ -66,6 +66,8 @@ QtObject {
     property bool overviewHideEmpty: false
     property bool overviewLivePreview: true
     property bool overviewShowCaption: true
+    property string popupAnimation: "slide"   // none | fade | slide | scale | pop | drop
+    property int popupAnimDuration: 220
 
     property bool settingsVisible: false
     property bool loaded: false
@@ -85,8 +87,8 @@ QtObject {
         "use24h", "barClockSeconds", "deskClockSeconds", "dateFormat", "weekStart",
         "notificationTimeout", "notificationHistoryLimit",
         "overviewWorkspaceCount", "overviewColumns", "overviewCellWidth",
-        "overviewHideEmpty", "overviewLivePreview", "overviewShowCaption"
-    ]
+        "overviewHideEmpty", "overviewLivePreview", "overviewShowCaption",
+        "popupAnimation", "popupAnimDuration"    ]
 
     property Process saveProc: Process { command: [] }
 

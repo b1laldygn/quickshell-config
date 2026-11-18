@@ -6,6 +6,7 @@ import QtQuick
 import QtQuick.Layouts
 import "root:/config"
 import "root:/services"
+import "root:/modules/common"
 
 Scope {
     Variants {
@@ -16,7 +17,12 @@ Scope {
             property var modelData
             screen: modelData
 
-            visible: BluetoothListState.visible
+            visible: fx.shown
+
+            PopupFx {
+                id: fx
+                open: BluetoothListState.visible
+            }
 
             anchors { top: true; bottom: true; left: true; right: true }
             color: "transparent"
@@ -99,6 +105,10 @@ Scope {
                     width: 300
                     height: 320
                     radius: 14
+                    opacity: fx.cardOpacity
+                    scale: fx.cardScale
+                    transformOrigin: Item.Top
+                    transform: Translate { y: fx.cardY }
                     color: Colors.backgroundAlt
                     border.color: Colors.border
                     border.width: 1
