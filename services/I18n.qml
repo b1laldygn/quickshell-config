@@ -40,8 +40,13 @@ QtObject {
             searchPlaceholder: "Ara...",
             empty: "Boş",
             noResults: "Sonuç bulunamadı",
+            noResultsFound: "Sonuç bulunamadı",
             keybindsTitle: "Kısayollar",
-            appSearchPlaceholder: "Uygulama ara...",
+            appSearchPlaceholder: "Uygulama, hesaplama, komut (>) veya web (!g)...",
+            calcResultSubtitle: "Hesaplama sonucu (Kopyalamak için Enter)",
+            runCommandSubtitle: "Komutu çalıştır",
+            searchWebSubtitle: "Web'de ara",
+            openUrlSubtitle: "Adresi tarayıcıda aç",
             clipboardTitle: "Pano Geçmişi",
             clipboardEmpty: "Pano geçmişi boş",
             clearAll: "Tümünü sil",
@@ -49,6 +54,8 @@ QtObject {
             noNotifications: "Bildirim yok",
             noAppsPlaying: "Ses çalan uygulama yok",
             audioDevices: "Ses Cihazları",
+            audioSettings: "Ses Ayarları",
+            systemVolume: "Sistem Sesi",
             output: "Çıkış",
             input: "Giriş (Mikrofon)",
             appVolumes: "Uygulama Sesleri",
@@ -148,7 +155,8 @@ QtObject {
             animSlide: "Yukarıdan kayma",
             animScale: "Büyüme",
             animPop: "Zıplama",
-            animDrop: "Düşme (sekmeli)"        },
+            animDrop: "Düşme (sekmeli)"
+        },
         en: {
             settings: "Settings",
             tabAppearance: "Appearance",
@@ -183,8 +191,13 @@ QtObject {
             searchPlaceholder: "Search...",
             empty: "Empty",
             noResults: "No results",
+            noResultsFound: "No results found",
             keybindsTitle: "Keybinds",
-            appSearchPlaceholder: "Search apps...",
+            appSearchPlaceholder: "Search apps, calculate, run (>) or web (!g)...",
+            calcResultSubtitle: "Calculation result (Press Enter to copy)",
+            runCommandSubtitle: "Run command",
+            searchWebSubtitle: "Search the web",
+            openUrlSubtitle: "Open URL in browser",
             clipboardTitle: "Clipboard History",
             clipboardEmpty: "Clipboard history is empty",
             clearAll: "Clear all",
@@ -192,6 +205,8 @@ QtObject {
             noNotifications: "No notifications",
             noAppsPlaying: "No apps playing audio",
             audioDevices: "Audio Devices",
+            audioSettings: "Audio Settings",
+            systemVolume: "System Volume",
             output: "Output",
             input: "Input (Microphone)",
             appVolumes: "App Volumes",
@@ -291,18 +306,45 @@ QtObject {
             animSlide: "Slide down",
             animScale: "Grow",
             animPop: "Pop",
-            animDrop: "Drop (bounce)"        }
+            animDrop: "Drop (bounce)"
+        }
     })
 
-    function t(key) {
-        const lang = SettingsState.language || "tr"
-        const table = root.strings[lang] || root.strings.tr
-        return table[key] !== undefined ? table[key] : key
+    readonly property string currentLanguage: SettingsState.language || "tr"
+
+    function t(key, params) {
+        const lang = root.currentLanguage
+        let val = undefined
+
+        if (root.strings[lang] && root.strings[lang][key] !== undefined) {
+            val = root.strings[lang][key]
+        } else if (root.strings.tr && root.strings.tr[key] !== undefined) {
+            val = root.strings.tr[key]
+        } else if (root.strings.en && root.strings.en[key] !== undefined) {
+            val = root.strings.en[key]
+        } else {
+            val = key
+        }
+
+        if (params && typeof params === "object") {
+            for (const p in params) {
+                val = String(val).replace(new RegExp("\\{" + p + "\\}", "g"), params[p])
+            }
+        }
+        return val
     }
 
     function tArr(key) {
-        const lang = SettingsState.language || "tr"
-        const table = root.strings[lang] || root.strings.tr
-        return table[key] !== undefined ? table[key] : []
+        const lang = root.currentLanguage
+        if (root.strings[lang] && Array.isArray(root.strings[lang][key])) {
+            return root.strings[lang][key]
+        }
+        if (root.strings.tr && Array.isArray(root.strings.tr[key])) {
+            return root.strings.tr[key]
+        }
+        if (root.strings.en && Array.isArray(root.strings.en[key])) {
+            return root.strings.en[key]
+        }
+        return []
     }
 }

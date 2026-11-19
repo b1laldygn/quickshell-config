@@ -10,7 +10,6 @@ RowLayout {
     id: root
     spacing: 10
 
-    property real currentVolume: 0.5
     property real currentBrightness: 0.5
 
     // ---- WIFI ----
@@ -26,7 +25,7 @@ RowLayout {
         Text {
             anchors.centerIn: parent
             text: WifiStatus.connected ? "󰖩" : "󰖪"
-            color: "#F5F5F5"
+            color: Colors.foreground
             font.pixelSize: 14
             font.family: "JetBrainsMono Nerd Font"
         }
@@ -64,7 +63,7 @@ RowLayout {
             anchors.left: parent.left
             anchors.verticalCenter: parent.verticalCenter
             text: "󰃞"
-            color: "#cdd6f4"
+            color: Colors.foreground
             font.pixelSize: 14
             font.family: "JetBrainsMono Nerd Font"
         }
@@ -75,7 +74,7 @@ RowLayout {
             anchors.leftMargin: 4
             anchors.verticalCenter: brightnessIcon.verticalCenter
             text: Math.round(root.currentBrightness * 100) + "%"
-            color: "#cdd6f4"
+            color: Colors.foreground
             font.pixelSize: 11
         }
 
@@ -125,19 +124,18 @@ RowLayout {
             }
         }
     }
-
     Timer {
-        interval: SettingsState.volumePollInterval
+        interval: Math.max(250, SettingsState.brightnessPollInterval)
         running: true
         repeat: true
         onTriggered: {
-            if (!brightnessDebounce.running) {
+            if (!brightnessDebounce.running && !brightnessGetProc.running) {
                 brightnessGetProc.running = true
             }
         }
     }
 
-    // ---- VOLUME (wpctl ile PipeWire/PulseAudio Kontrolü) ----
+    // ---- VOLUME (AudioMixerState ile senkronize, event-driven) ----
     Item {
         id: volumeContainer
         Layout.alignment: Qt.AlignVCenter
@@ -148,8 +146,8 @@ RowLayout {
             id: volumeIcon
             anchors.left: parent.left
             anchors.verticalCenter: parent.verticalCenter
-            text: "󰕾"
-            color: "#cdd6f4"
+            text: AudioMixerState.masterMuted ? "󰝟" : "󰕾"
+            color: Colors.foreground
             font.pixelSize: 14
             font.family: "JetBrainsMono Nerd Font"
         }
@@ -159,8 +157,8 @@ RowLayout {
             anchors.left: volumeIcon.right
             anchors.leftMargin: 4
             anchors.verticalCenter: volumeIcon.verticalCenter
-            text: Math.round(root.currentVolume * 100) + "%"
-            color: "#cdd6f4"
+            text: Math.round(AudioMixerState.masterVolume * 100) + "%"
+            color: Colors.foreground
             font.pixelSize: 11
         }
 
@@ -172,13 +170,14 @@ RowLayout {
                 if (mouse.button === Qt.LeftButton) {
                     AudioDeviceListState.visible = !AudioDeviceListState.visible
                 } else if (mouse.button === Qt.MiddleButton) {
-                    volumeMuteProc.running = true
+                    AudioMixerState.toggleMasterMute()
                 }
             }
             onWheel: (wheel) => {
                 const delta = wheel.angleDelta.y > 0 ? 0.05 : -0.05
-                root.currentVolume = Math.max(0, Math.min(1, root.currentVolume + delta))
-                OsdService.show("volume", root.currentVolume)
+                const target = Math.max(0, Math.min(1, AudioMixerState.masterVolume + delta))
+                AudioMixerState.masterVolume = target
+                OsdService.show("volume", target)
                 volumeDebounce.restart()
             }
         }
@@ -189,71 +188,7 @@ RowLayout {
         id: volumeDebounce
         interval: 150
         onTriggered: {
-            const pct = Math.round(root.currentVolume * 100)
-            volumeSetProc.command = ["wpctl", "set-volume", "@DEFAULT_AUDIO_SINK@", pct + "%"]
-            volumeSetProc.running = true
-        }
-    }
-
-    Process {
-        id: volumeSetProc
-        onExited: {
-            volumeStatusProc.running = true
-            volumeMuteStatusProc.running = true
-        }
-    }
-
-    // Ses Seviyesini Okuma (senkronizasyon)
-    Process {
-        id: volumeStatusProc
-        command: ["pactl", "get-sink-volume", "@DEFAULT_SINK@"]
-        running: true
-        stdout: StdioCollector {
-            onStreamFinished: {
-                const out = this.text.trim();
-                const match = out.match(/(\d+)%/);
-                if (match && match[1]) {
-                    const newVolume = parseInt(match[1]) / 100
-                    if (Math.abs(newVolume - root.currentVolume) > 0.001) {
-                        root.currentVolume = newVolume
-                        OsdService.show("volume", newVolume)
-                    }
-                }
-            }
-        }
-    }
-
-    // Mute (Sessizlik) Durumunu Okuma
-    Process {
-        id: volumeMuteStatusProc
-        command: ["pactl", "get-sink-mute", "@DEFAULT_SINK@"]
-        running: true
-        stdout: StdioCollector {
-            onStreamFinished: {
-                const isMuted = this.text.includes("yes");
-                volumeIcon.text = isMuted ? "󰝟" : "󰕾"
-            }
-        }
-    }
-
-    Process {
-        id: volumeMuteProc
-        command: ["pactl", "set-sink-mute", "@DEFAULT_SINK@", "toggle"]
-        onExited: {
-            volumeStatusProc.running = true
-            volumeMuteStatusProc.running = true
-        }
-    }
-
-    Timer {
-        interval: 50
-        running: true
-        repeat: true
-        onTriggered: {
-            if (!volumeDebounce.running) {
-                volumeStatusProc.running = true
-                volumeMuteStatusProc.running = true
-            }
+            AudioMixerState.setMasterVolume(Math.round(AudioMixerState.masterVolume * 100))
         }
     }
 
@@ -274,7 +209,7 @@ RowLayout {
                 if (BluetoothStatus.connectedCount > 0) return "󰂱"
                 return "󰂯"
             }
-            color: "#F5F5F5"
+            color: Colors.foreground
             font.pixelSize: 14
             font.family: "JetBrainsMono Nerd Font"
         }

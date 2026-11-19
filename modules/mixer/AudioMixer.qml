@@ -39,8 +39,8 @@ Scope {
                     spacing: 8
 
                     Text {
-                        text: "Ses Ayarları"
-                        color: "#F5F5F5"
+                        text: I18n.t("audioSettings")
+                        color: Colors.foreground
                         font.pixelSize: 14
                         font.bold: true
                     }
@@ -72,15 +72,15 @@ Scope {
                                 Layout.fillWidth: true
 
                                 Text {
-                                    text: "Sistem Sesi"
-                                    color: "#F5F5F5"
+                                    text: I18n.t("systemVolume")
+                                    color: Colors.foreground
                                     font.pixelSize: 12
                                     font.bold: true
                                     Layout.fillWidth: true
                                 }
 
                                 Text {
-                                    text: AudioMixerState.masterMuted ? "Sessiz" : Math.round(masterCard.localVolume * 100) + "%"
+                                    text: AudioMixerState.masterMuted ? I18n.t("muted") : Math.round(masterCard.localVolume * 100) + "%"
                                     color: AudioMixerState.masterMuted ? Colors.danger : Colors.foregroundMuted
                                     font.pixelSize: 10
 
@@ -144,15 +144,15 @@ Scope {
 
                     // ---- UYGULAMA BAZLI SESLER ----
                     Text {
-                        text: "Uygulama Sesleri"
-                        color: "#F5F5F5"
+                        text: I18n.t("appVolumes")
+                        color: Colors.foreground
                         font.pixelSize: 12
                         font.bold: true
                     }
 
                     Text {
                         visible: AudioMixerState.streams.length === 0
-                        text: "Ses çalan uygulama yok"
+                        text: I18n.t("noAppsPlaying")
                         color: Colors.foregroundMuted
                         font.pixelSize: 11
                         font.italic: true
@@ -194,7 +194,7 @@ Scope {
 
                                     Text {
                                         text: modelData.appName
-                                        color: "#F5F5F5"
+                                        color: Colors.foreground
                                         font.pixelSize: 12
                                         font.bold: true
                                         elide: Text.ElideRight
@@ -202,7 +202,7 @@ Scope {
                                     }
 
                                     Text {
-                                        text: modelData.muted ? "Sessiz" : Math.round(localVolume * 100) + "%"
+                                        text: modelData.muted ? I18n.t("muted") : Math.round(localVolume * 100) + "%"
                                         color: modelData.muted ? Colors.danger : Colors.foregroundMuted
                                         font.pixelSize: 10
 

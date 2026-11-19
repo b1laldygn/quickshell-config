@@ -56,7 +56,6 @@ ShellRoot {
     DesktopWidgets {}
     Settings {}
     SettingsIpc {}
-    DesktopWidgets {}
     ClockWidget {}
     SystemWidget {}
     MediaWidget {}

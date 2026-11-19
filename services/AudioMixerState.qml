@@ -2,6 +2,7 @@
 pragma Singleton
 import QtQuick
 import Quickshell.Io
+import "root:/services"
 
 QtObject {
     id: root
@@ -12,7 +13,55 @@ QtObject {
 
     property real masterVolume: 0.5
     property bool masterMuted: false
+    property bool initialized: false
 
+    // ---- EVENT-DRIVEN AUDIO LISTENER (pactl subscribe) ----
+    property Process subscribeProc: Process {
+        command: ["pactl", "subscribe"]
+        running: true
+        stdout: SplitParser {
+            splitMarker: "\n"
+            onRead: data => {
+                const line = data.trim()
+                if (line.includes("sink") || line.includes("server")) {
+                    sinkDebounce.restart()
+                }
+                if (line.includes("sink-input")) {
+                    if (root.visible || AudioDeviceListState.visible) {
+                        streamDebounce.restart()
+                    }
+                }
+            }
+        }
+        onExited: restartTimer.restart()
+    }
+
+    property Timer restartTimer: Timer {
+        interval: 1000
+        onTriggered: {
+            if (!subscribeProc.running) subscribeProc.running = true
+        }
+    }
+
+    property Timer sinkDebounce: Timer {
+        interval: 40
+        onTriggered: {
+            if (!root.anyDragging) {
+                root.refreshMaster()
+            }
+        }
+    }
+
+    property Timer streamDebounce: Timer {
+        interval: 60
+        onTriggered: {
+            if (!root.anyDragging) {
+                root.refresh()
+            }
+        }
+    }
+
+    // Uygulama sesleri (sink-inputs) listesini alma
     property Process listProc: Process {
         command: ["pactl", "-f", "json", "list", "sink-inputs"]
         stdout: StdioCollector {
@@ -50,17 +99,14 @@ QtObject {
     }
 
     function refresh() {
-        listProc.running = true
+        if (!listProc.running) listProc.running = true
     }
 
-    property Timer pollTimer: Timer {
-        interval: 1000
-        running: root.visible && !root.anyDragging
-        repeat: true
-        triggeredOnStart: true
-        onTriggered: {
-            root.refresh()
+    // Mikser paneli açıldığında verileri anında tazele
+    onVisibleChanged: {
+        if (visible) {
             root.refreshMaster()
+            root.refresh()
         }
     }
 
@@ -68,12 +114,14 @@ QtObject {
         root.visible = !root.visible
     }
 
+    // Uygulama ses seviyesi değiştirme
     property Process setVolProc: Process { command: [] }
     function setVolume(streamId, pct) {
         setVolProc.command = ["pactl", "set-sink-input-volume", String(streamId), pct + "%"]
         setVolProc.running = true
     }
 
+    // Uygulama sessize alma
     property Process toggleMuteProc: Process { command: [] }
     function toggleMute(streamId) {
         toggleMuteProc.command = ["pactl", "set-sink-input-mute", String(streamId), "toggle"]
@@ -86,45 +134,62 @@ QtObject {
         onTriggered: root.refresh()
     }
 
+    // Master ses seviyesini okuma
     property Process masterVolProc: Process {
         command: ["pactl", "get-sink-volume", "@DEFAULT_SINK@"]
         stdout: StdioCollector {
             onStreamFinished: {
                 const match = this.text.match(/(\d+)%/)
-                if (match) root.masterVolume = parseInt(match[1]) / 100
+                if (match) {
+                    const newVol = parseInt(match[1]) / 100
+                    if (root.initialized && !root.anyDragging && Math.abs(newVol - root.masterVolume) > 0.001) {
+                        if (!root.visible && !AudioDeviceListState.visible) {
+                            OsdService.show("volume", newVol)
+                        }
+                    }
+                    root.masterVolume = newVol
+                    root.initialized = true
+                }
             }
         }
     }
 
+    // Master sessize alma durumunu okuma
     property Process masterMuteProc: Process {
         command: ["pactl", "get-sink-mute", "@DEFAULT_SINK@"]
         stdout: StdioCollector {
             onStreamFinished: {
-                root.masterMuted = this.text.includes("yes")
+                const muted = this.text.includes("yes")
+                if (root.initialized && !root.anyDragging && muted !== root.masterMuted) {
+                    if (!root.visible && !AudioDeviceListState.visible) {
+                        OsdService.show("volume", muted ? 0 : root.masterVolume)
+                    }
+                }
+                root.masterMuted = muted
             }
         }
     }
 
     function refreshMaster() {
-        masterVolProc.running = true
-        masterMuteProc.running = true
+        if (!masterVolProc.running) masterVolProc.running = true
+        if (!masterMuteProc.running) masterMuteProc.running = true
     }
 
+    // Master ses seviyesini ayarlama
     property Process setMasterVolProc: Process { command: [] }
     function setMasterVolume(pct) {
         setMasterVolProc.command = ["pactl", "set-sink-volume", "@DEFAULT_SINK@", pct + "%"]
         setMasterVolProc.running = true
     }
 
+    // Master sessize alma/açma
     property Process toggleMasterMuteProc: Process { command: [] }
     function toggleMasterMute() {
         toggleMasterMuteProc.command = ["pactl", "set-sink-mute", "@DEFAULT_SINK@", "toggle"]
         toggleMasterMuteProc.running = true
-        masterRefreshDelay.restart()
     }
 
-    property Timer masterRefreshDelay: Timer {
-        interval: 150
-        onTriggered: root.refreshMaster()
+    Component.onCompleted: {
+        root.refreshMaster()
     }
 }
