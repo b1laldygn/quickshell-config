@@ -30,10 +30,53 @@ Scope {
         property string hoveredName: ""
 
         readonly property string activeName: WallpaperService.currentWallpaperPath.split("/").pop()
-        readonly property string shownOriginal: hoveredName !== "" ? hoveredName.slice(0, -4) : activeName
+
+        readonly property string currentNavName: {
+            if (grid.currentIndex >= 0 && grid.currentIndex < folderModel.count) {
+                const fn = folderModel.get(grid.currentIndex, "fileName")
+                return fn ? fn.slice(0, -4) : ""
+            }
+            return ""
+        }
+
+        readonly property string shownOriginal: {
+            if (hoveredName !== "") return hoveredName.slice(0, -4)
+            if (currentNavName !== "") return currentNavName
+            return activeName
+        }
+
         readonly property string shownThumb: shownOriginal !== ""
             ? "file://" + WallpaperThumbs.thumbDir + "/" + shownOriginal + ".jpg"
             : ""
+
+        function syncCurrentToActive() {
+            const active = pickerWindow.activeName
+            if (folderModel.count === 0) return
+            if (active) {
+                for (let i = 0; i < folderModel.count; i++) {
+                    const fn = folderModel.get(i, "fileName")
+                    if (fn && fn.slice(0, -4) === active) {
+                        grid.currentIndex = i
+                        grid.positionViewAtIndex(i, GridView.Contain)
+                        return
+                    }
+                }
+            }
+            if (grid.currentIndex < 0 && folderModel.count > 0) {
+                grid.currentIndex = 0
+            }
+        }
+
+        function applyCurrent() {
+            if (grid.currentIndex >= 0 && grid.currentIndex < folderModel.count) {
+                const fn = folderModel.get(grid.currentIndex, "fileName")
+                if (fn) {
+                    const orig = fn.slice(0, -4)
+                    WallpaperService.setWallpaper(WallpaperThumbs.sourceDir + "/" + orig)
+                    WallpaperPickerState.visible = false
+                }
+            }
+        }
 
         property var transitionOptions: [
             { key: "none", label: I18n.t("tNone") },
@@ -49,6 +92,10 @@ Scope {
         onVisibleChanged: {
             if (visible) {
                 WallpaperThumbs.generate()
+                Qt.callLater(() => {
+                    grid.forceActiveFocus()
+                    pickerWindow.syncCurrentToActive()
+                })
             } else {
                 hoveredName = ""
             }
