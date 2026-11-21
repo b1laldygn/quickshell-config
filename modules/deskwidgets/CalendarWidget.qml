@@ -46,21 +46,21 @@ Scope {
             widgetId: "calendar"
             shown: SettingsState.showCalendarWidget
             corner: SettingsState.calendarWidgetCorner
-            cardWidth: 250
+            cardWidth: Math.round(250 * SettingsState.scaleFactor)
 
             Text {
                 text: I18n.tArr("monthNames")[root.now.getMonth()] + " " + root.now.getFullYear()
                 color: "#F5F5F5"
-                font.pixelSize: 14
+                font.pixelSize: Math.round(14 * SettingsState.scaleFactor)
                 font.bold: true
             }
 
             GridLayout {
                 Layout.alignment: Qt.AlignHCenter
-                Layout.topMargin: 6
+                Layout.topMargin: Math.round(6 * SettingsState.scaleFactor)
                 columns: 7
-                rowSpacing: 2
-                columnSpacing: 2
+                rowSpacing: Math.round(2 * SettingsState.scaleFactor)
+                columnSpacing: Math.round(2 * SettingsState.scaleFactor)
 
                 Repeater {
                     model: 7
@@ -68,9 +68,9 @@ Scope {
                     Text {
                         text: TimeFormat.weekdayLabel(index)
                         color: Colors.foregroundMuted
-                        font.pixelSize: 9
+                        font.pixelSize: Math.round(9 * SettingsState.scaleFactor)
                         font.bold: true
-                        Layout.preferredWidth: 28
+                        Layout.preferredWidth: Math.round(28 * SettingsState.scaleFactor)
                         horizontalAlignment: Text.AlignHCenter
                     }
                 }
@@ -79,9 +79,9 @@ Scope {
                     model: root.cells
 
                     Rectangle {
-                        Layout.preferredWidth: 28
-                        Layout.preferredHeight: 22
-                        radius: 5
+                        Layout.preferredWidth: Math.round(28 * SettingsState.scaleFactor)
+                        Layout.preferredHeight: Math.round(22 * SettingsState.scaleFactor)
+                        radius: Math.round(5 * SettingsState.scaleFactor)
                         color: modelData.isToday ? Colors.accent : "transparent"
 
                         Text {
@@ -90,7 +90,7 @@ Scope {
                             color: modelData.isToday
                                 ? Colors.accentText
                                 : (modelData.current ? "#F5F5F5" : Colors.foregroundMuted)
-                            font.pixelSize: 10
+                            font.pixelSize: Math.round(10 * SettingsState.scaleFactor)
                             font.bold: modelData.isToday
                         }
                     }

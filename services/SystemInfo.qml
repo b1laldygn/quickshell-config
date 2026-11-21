@@ -16,6 +16,8 @@ QtObject {
 
     // --- Ağır metrikler (sadece panel açıkken) ---
     property bool panelVisible: false
+    property alias visible: root.panelVisible
+    property real anchorX: 120
     property var topProcesses: []
     property string diskUsed: "-"
     property string diskTotal: "-"

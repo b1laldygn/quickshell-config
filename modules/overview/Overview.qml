@@ -3,6 +3,8 @@ import Quickshell
 import Quickshell.Wayland
 import Quickshell.Hyprland
 import QtQuick
+import QtQuick.Layouts
+import Qt5Compat.GraphicalEffects
 import "root:/config"
 import "root:/services"
 
@@ -18,20 +20,22 @@ Scope {
             visible: OverviewState.visible
 
             anchors { top: true; bottom: true; left: true; right: true }
-            color: "#cc11111b"
+            color: Qt.rgba(0.06, 0.06, 0.09, 0.88)
 
             WlrLayershell.layer: WlrLayer.Overlay
             WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
 
-            // ---- Boyutlar (Ayarlar'dan) ----
-            readonly property int gap: 14
+            // ---- Boyutlar (Ayarlar ve GUI Scale ile uyumlu) ----
+            readonly property int gap: Math.round(16 * SettingsState.scaleFactor)
             readonly property int wsCount: SettingsState.overviewWorkspaceCount
             readonly property int plannedCols: Math.max(1, Math.min(SettingsState.overviewColumns, wsCount))
-            readonly property int cellW: Math.max(120, Math.min(SettingsState.overviewCellWidth,
-                Math.floor((modelData.width * 0.92 - (plannedCols - 1) * gap) / plannedCols)))
-            readonly property int drawW: cellW - 30
-            readonly property int drawH: Math.max(40, Math.round(drawW * modelData.height / modelData.width))
-            readonly property int cellH: drawH + 40
+            readonly property int cellW: Math.max(140, Math.min(
+                Math.round(SettingsState.overviewCellWidth * SettingsState.scaleFactor),
+                Math.floor((modelData.width * 0.90 - (plannedCols - 1) * gap) / plannedCols)
+            ))
+            readonly property int drawW: cellW - Math.round(28 * SettingsState.scaleFactor)
+            readonly property int drawH: Math.max(48, Math.round(drawW * modelData.height / modelData.width))
+            readonly property int cellH: drawH + Math.round(48 * SettingsState.scaleFactor)
             readonly property int effCols: Math.max(1, Math.min(SettingsState.overviewColumns, renderData.length))
 
             // ---- Durum ----
@@ -53,6 +57,7 @@ Scope {
             property real pressGlobalX: 0
             property real pressGlobalY: 0
             property string dragAppId: ""
+            property int dropTargetWsId: -1
 
             // sağ tık menüsü
             property bool menuOpen: false
@@ -69,6 +74,14 @@ Scope {
                 "com.anthropic.Claude": "claude-desktop",
                 "YouTube Music Desktop App": "youtube-music-desktop-app"
             })
+
+            readonly property int totalWindows: {
+                let count = 0
+                for (let i = 0; i < renderData.length; i++) {
+                    count += (renderData[i].windows || []).length
+                }
+                return count
+            }
 
             readonly property string wsCaption: {
                 const e = renderData.find(x => x.wsId === selectedWsId)
@@ -113,8 +126,6 @@ Scope {
                 }
             }
 
-            // Veriyi ve bir "imza" üretir. İmza değişmedikçe kutular yeniden kurulmaz,
-            // böylece canlı önizlemeler titremez.
             function buildRenderData() {
                 Hyprland.refreshMonitors()
                 Hyprland.refreshWorkspaces()
@@ -272,7 +283,7 @@ Scope {
                 event.accepted = handled
             }
 
-            // ---- Sürükle-bırak (elle fare takibi) ----
+            // ---- Sürükle-bırak ----
             function findDropTarget(gx, gy) {
                 for (const wsIdStr in overviewWindow.cellRefs) {
                     const wsId = parseInt(wsIdStr)
@@ -306,9 +317,9 @@ Scope {
 
             function finishDrag(gx, gy) {
                 const dist = Math.hypot(gx - pressGlobalX, gy - pressGlobalY)
+                overviewWindow.dropTargetWsId = -1
 
                 if (dist < 8) {
-                    // Sürükleme değil, tıklama: pencereye odaklan
                     Hyprland.dispatch("focuswindow address:" + dragAddress)
                     OverviewState.visible = false
                     dragActive = false
@@ -329,10 +340,11 @@ Scope {
                 }
             }
 
-            // ---- Açılış / kapanış ----
+            // ---- Açılış / Kapanış ----
             onVisibleChanged: {
                 menuOpen = false
                 dragActive = false
+                dropTargetWsId = -1
                 hoverWindowText = ""
                 if (visible) {
                     selectedWsId = Hyprland.focusedWorkspace?.id ?? 1
@@ -348,7 +360,7 @@ Scope {
                 property: "openAmount"
                 from: 0
                 to: 1
-                duration: 180
+                duration: 220
                 easing.type: Easing.OutCubic
             }
 
@@ -387,7 +399,7 @@ Scope {
                 onTriggered: overviewWindow.previewTick++
             }
 
-            // ---- Menü satırı bileşeni ----
+            // ---- Menü Satırı ----
             component MenuRow: Rectangle {
                 id: mrow
                 property string label: ""
@@ -395,17 +407,18 @@ Scope {
                 signal triggered()
 
                 width: parent ? parent.width : 0
-                height: 28
-                radius: 6
+                height: Math.round(30 * SettingsState.scaleFactor)
+                radius: Math.round(8 * SettingsState.scaleFactor)
                 color: mrowArea.containsMouse ? Colors.hover : "transparent"
 
                 Text {
                     anchors.left: parent.left
-                    anchors.leftMargin: 10
+                    anchors.leftMargin: Math.round(10 * SettingsState.scaleFactor)
                     anchors.verticalCenter: parent.verticalCenter
                     text: mrow.label
                     color: mrow.labelColor
-                    font.pixelSize: 12
+                    font.pixelSize: Math.round(12 * SettingsState.scaleFactor)
+                    font.family: "JetBrainsMono Nerd Font"
                 }
 
                 MouseArea {
@@ -417,7 +430,7 @@ Scope {
                 }
             }
 
-            // ---- Ekran ----
+            // ---- Arayüz Kökü ----
             Item {
                 id: overviewRoot
                 anchors.fill: parent
@@ -425,19 +438,98 @@ Scope {
 
                 Keys.onPressed: (event) => overviewWindow.handleKey(event)
 
+                // Dış tıkla kapatma
                 MouseArea {
                     anchors.fill: parent
                     enabled: !overviewWindow.dragActive
                     onClicked: OverviewState.visible = false
                 }
 
+                // ==================== ÜST BAŞLIK BARI ====================
+                Rectangle {
+                    anchors.top: parent.top
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    anchors.topMargin: Math.round(28 * SettingsState.scaleFactor)
+                    height: Math.round(40 * SettingsState.scaleFactor)
+                    width: topRow.implicitWidth + Math.round(32 * SettingsState.scaleFactor)
+                    radius: Math.round(20 * SettingsState.scaleFactor)
+                    color: Qt.rgba(Colors.backgroundAlt.r, Colors.backgroundAlt.g, Colors.backgroundAlt.b, 0.90)
+                    border.color: Colors.border
+                    border.width: 1
+                    z: 100
+                    opacity: overviewWindow.openAmount
+                    scale: 0.95 + 0.05 * overviewWindow.openAmount
+
+                    RowLayout {
+                        id: topRow
+                        anchors.centerIn: parent
+                        spacing: Math.round(14 * SettingsState.scaleFactor)
+
+                        RowLayout {
+                            spacing: 6
+                            Text {
+                                text: "󰍹"
+                                color: Colors.accent
+                                font.pixelSize: Math.round(15 * SettingsState.scaleFactor)
+                                font.family: "JetBrainsMono Nerd Font"
+                            }
+                            Text {
+                                text: I18n.t("tabOverview")
+                                color: "#F5F5F5"
+                                font.pixelSize: Math.round(13 * SettingsState.scaleFactor)
+                                font.bold: true
+                            }
+                        }
+
+                        Rectangle {
+                            Layout.preferredHeight: Math.round(22 * SettingsState.scaleFactor)
+                            Layout.preferredWidth: totalWinText.implicitWidth + Math.round(14 * SettingsState.scaleFactor)
+                            radius: Math.round(11 * SettingsState.scaleFactor)
+                            color: Colors.surface0
+
+                            Text {
+                                id: totalWinText
+                                anchors.centerIn: parent
+                                text: overviewWindow.totalWindows + " " + I18n.t("windowsUnit")
+                                color: Colors.foregroundMuted
+                                font.pixelSize: Math.round(10 * SettingsState.scaleFactor)
+                                font.bold: true
+                            }
+                        }
+
+                        Rectangle {
+                            Layout.preferredWidth: Math.round(22 * SettingsState.scaleFactor)
+                            Layout.preferredHeight: Math.round(22 * SettingsState.scaleFactor)
+                            radius: width / 2
+                            color: topCloseHover.containsMouse ? Colors.danger : Colors.surface0
+                            Behavior on color { ColorAnimation { duration: 120 } }
+
+                            Text {
+                                anchors.centerIn: parent
+                                text: "✕"
+                                color: topCloseHover.containsMouse ? "#F5F5F5" : Colors.foregroundMuted
+                                font.pixelSize: Math.round(10 * SettingsState.scaleFactor)
+                            }
+
+                            MouseArea {
+                                id: topCloseHover
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: OverviewState.visible = false
+                            }
+                        }
+                    }
+                }
+
+                // ==================== MERKEZ ÇALIŞMA ALANLARI IZGARASI ====================
                 Item {
                     id: gridBox
                     anchors.centerIn: parent
                     width: grid.width
-                    height: grid.height + (SettingsState.overviewShowCaption ? 36 : 0)
+                    height: grid.height
                     opacity: overviewWindow.openAmount
-                    scale: 0.96 + 0.04 * overviewWindow.openAmount
+                    scale: 0.94 + 0.06 * overviewWindow.openAmount
 
                     Grid {
                         id: grid
@@ -453,61 +545,133 @@ Scope {
                                 property var cellWindows: modelData.windows
                                 readonly property bool isActive: Hyprland.focusedWorkspace?.id === wsId
                                 readonly property bool isSelected: overviewWindow.selectedWsId === wsId
+                                readonly property bool isDropTarget: overviewWindow.dragActive && overviewWindow.dropTargetWsId === wsId
 
                                 width: overviewWindow.cellW
                                 height: overviewWindow.cellH
-                                radius: 10
-                                color: Colors.backgroundAlt
-                                border.color: isSelected ? "#F5F5F5" : (isActive ? Colors.accent : Colors.border)
-                                border.width: (isSelected || isActive) ? 2 : 1
-                                clip: true
+                                radius: Math.round(20 * SettingsState.scaleFactor)
+                                color: "transparent"
+                                border.color: isDropTarget
+                                    ? "#a6e3a1"
+                                    : (isActive ? Colors.accent : (isSelected ? "#F5F5F5" : Colors.border))
+                                border.width: (isDropTarget || isActive || isSelected) ? 2 : 1
+
+                                scale: isDropTarget ? 1.03 : (isSelected ? 1.025 : (cellMouse.containsMouse ? 1.012 : 1.0))
+                                Behavior on scale { NumberAnimation { duration: 150; easing.type: Easing.OutQuad } }
 
                                 Component.onCompleted: overviewWindow.cellRefs[wsId] = wsCell
                                 Component.onDestruction: {
                                     if (overviewWindow.cellRefs[wsId] === wsCell) delete overviewWindow.cellRefs[wsId]
                                 }
 
-                                Image {
-                                    anchors.fill: parent
-                                    source: WallpaperService.currentWallpaperPath
-                                        ? "file://" + WallpaperService.currentWallpaperPath
-                                        : ""
-                                    fillMode: Image.PreserveAspectCrop
-                                    sourceSize.width: 480
-                                    asynchronous: true
-                                    visible: source !== ""
-                                }
-
+                                // ── Mask şekli: rounded rect (görünmez) ──────────────────
                                 Rectangle {
+                                    id: wsCellMask
                                     anchors.fill: parent
-                                    color: "#55000000"
+                                    radius: wsCell.radius
+                                    color: "white"
+                                    visible: false
+                                    layer.enabled: true
                                 }
 
-                                MouseArea {
+                                // ── İçerik katmanı: mask ile kırpılır ───────────────────
+                                Item {
+                                    id: wsCellContent
                                     anchors.fill: parent
-                                    z: -1
-                                    hoverEnabled: true
-                                    cursorShape: Qt.PointingHandCursor
-                                    enabled: !overviewWindow.dragActive
-                                    onEntered: overviewWindow.selectedWsId = wsCell.wsId
-                                    onClicked: overviewWindow.activateWorkspace(wsCell.wsId)
-                                }
+                                    layer.enabled: true
+                                    layer.effect: OpacityMask {
+                                        maskSource: wsCellMask
+                                    }
 
-                                Text {
+                                    // Arka plan rengi
+                                    Rectangle {
+                                        anchors.fill: parent
+                                        color: Colors.backgroundAlt
+                                    }
+
+                                    // Duvarkağıdı
+                                    Image {
+                                        anchors.fill: parent
+                                        source: WallpaperService.currentWallpaperPath
+                                            ? "file://" + WallpaperService.currentWallpaperPath
+                                            : ""
+                                        fillMode: Image.PreserveAspectCrop
+                                        sourceSize.width: 480
+                                        asynchronous: true
+                                        opacity: 0.28
+                                        visible: source !== ""
+                                    }
+
+                                    // Koyu overlay
+                                    Rectangle {
+                                        anchors.fill: parent
+                                        color: Qt.rgba(Colors.background.r, Colors.background.g, Colors.background.b, 0.76)
+                                    }
+
+                                    MouseArea {
+                                        id: cellMouse
+                                        anchors.fill: parent
+                                        z: -1
+                                        hoverEnabled: true
+                                        cursorShape: Qt.PointingHandCursor
+                                        enabled: !overviewWindow.dragActive
+                                        onEntered: overviewWindow.selectedWsId = wsCell.wsId
+                                        onClicked: overviewWindow.activateWorkspace(wsCell.wsId)
+                                    }
+
+                                } // wsCellContent
+
+                                // Kart Üst Başlık Şeridi
+                                RowLayout {
                                     anchors.top: parent.top
                                     anchors.left: parent.left
-                                    anchors.margins: 6
-                                    text: wsCell.wsId
-                                    color: wsCell.isActive ? Colors.accent : "#F5F5F5"
-                                    font.pixelSize: 11
-                                    font.bold: true
-                                    z: 5
+                                    anchors.right: parent.right
+                                    anchors.margins: Math.round(8 * SettingsState.scaleFactor)
+                                    z: 10
+
+                                    Rectangle {
+                                        Layout.preferredHeight: Math.round(22 * SettingsState.scaleFactor)
+                                        Layout.preferredWidth: wsBadgeRow.implicitWidth + Math.round(12 * SettingsState.scaleFactor)
+                                        radius: Math.round(12 * SettingsState.scaleFactor)
+                                        color: wsCell.isActive ? Colors.accent : (wsCell.isSelected ? "#ffffff" : Colors.surface0)
+
+                                        RowLayout {
+                                            id: wsBadgeRow
+                                            anchors.centerIn: parent
+                                            spacing: 4
+
+                                            Text {
+                                                text: "󰍹"
+                                                color: wsCell.isActive ? Colors.accentText : (wsCell.isSelected ? "#11111b" : Colors.foregroundMuted)
+                                                font.pixelSize: Math.round(10 * SettingsState.scaleFactor)
+                                                font.family: "JetBrainsMono Nerd Font"
+                                            }
+                                            Text {
+                                                text: wsCell.wsId
+                                                color: wsCell.isActive ? Colors.accentText : (wsCell.isSelected ? "#11111b" : "#F5F5F5")
+                                                font.pixelSize: Math.round(11 * SettingsState.scaleFactor)
+                                                font.bold: true
+                                            }
+                                        }
+                                    }
+
+                                    Item { Layout.fillWidth: true }
+
+                                    Text {
+                                        text: wsCell.cellWindows.length > 0
+                                            ? wsCell.cellWindows.length + " " + I18n.t("windowsUnit")
+                                            : I18n.t("empty")
+                                        color: wsCell.isActive ? Colors.accent : Colors.foregroundMuted
+                                        font.pixelSize: Math.round(10 * SettingsState.scaleFactor)
+                                        font.bold: wsCell.isActive
+                                    }
                                 }
 
+                                // Pencere Çizim Alanı
                                 Item {
                                     id: drawArea
                                     x: Math.round((parent.width - width) / 2)
-                                    y: 28
+                                    y: Math.round(36 * SettingsState.scaleFactor)
                                     width: overviewWindow.drawW
                                     height: overviewWindow.drawH
 
@@ -526,12 +690,12 @@ Scope {
                                             y: modelData.ry
                                             width: modelData.rw
                                             height: modelData.rh
-                                            radius: 4
+                                            radius: Math.round(12 * SettingsState.scaleFactor)
                                             color: modelData.activated ? Colors.accent : Colors.surface0
                                             clip: true
                                             opacity: (overviewWindow.dragActive && overviewWindow.dragAddress === modelData.address) ? 0.25 : 1
 
-                                            // Canlı önizleme (saniyede bir kare yakalanır)
+                                            // Canlı Önizleme
                                             ScreencopyView {
                                                 id: preview
                                                 anchors.fill: parent
@@ -552,16 +716,49 @@ Scope {
                                                 }
                                             }
 
-                                            // Önizleme yoksa uygulama ikonu
+                                            // Önizleme yoksa veya küçükse uygulama ikonu
                                             Image {
                                                 anchors.centerIn: parent
-                                                width: Math.min(parent.width - 6, 28)
+                                                width: Math.min(parent.width - 6, Math.round(28 * SettingsState.scaleFactor))
                                                 height: width
-                                                source: (!preview.visible && parent.width > 24 && parent.height > 24)
+                                                source: (!preview.visible && parent.width > 22 && parent.height > 22)
                                                     ? overviewWindow.iconFor(modelData.appId) : ""
                                                 fillMode: Image.PreserveAspectFit
                                                 asynchronous: true
                                                 visible: source !== ""
+                                            }
+
+                                            // Alt minyatür başlık şeridi (Mission Control stili)
+                                            Rectangle {
+                                                visible: chip.height >= Math.round(34 * SettingsState.scaleFactor) && chip.width >= Math.round(48 * SettingsState.scaleFactor)
+                                                anchors.left: parent.left
+                                                anchors.right: parent.right
+                                                anchors.bottom: parent.bottom
+                                                height: Math.round(18 * SettingsState.scaleFactor)
+                                                color: Qt.rgba(0, 0, 0, 0.72)
+
+                                                RowLayout {
+                                                    anchors.fill: parent
+                                                    anchors.leftMargin: 4
+                                                    anchors.rightMargin: 4
+                                                    spacing: 4
+
+                                                    Image {
+                                                        Layout.preferredWidth: Math.round(12 * SettingsState.scaleFactor)
+                                                        Layout.preferredHeight: Math.round(12 * SettingsState.scaleFactor)
+                                                        source: overviewWindow.iconFor(modelData.appId)
+                                                        fillMode: Image.PreserveAspectFit
+                                                        visible: source !== ""
+                                                    }
+
+                                                    Text {
+                                                        Layout.fillWidth: true
+                                                        text: modelData.wl?.title || modelData.appId || ""
+                                                        color: "#F5F5F5"
+                                                        font.pixelSize: Math.round(9 * SettingsState.scaleFactor)
+                                                        elide: Text.ElideRight
+                                                    }
+                                                }
                                             }
 
                                             // Çerçeve (aktif pencere vurgulu)
@@ -570,7 +767,7 @@ Scope {
                                                 radius: chip.radius
                                                 color: "transparent"
                                                 border.width: modelData.activated ? 2 : 1
-                                                border.color: modelData.activated ? Colors.accent : "#66ffffff"
+                                                border.color: modelData.activated ? Colors.accent : Qt.rgba(1, 1, 1, 0.22)
                                             }
 
                                             MouseArea {
@@ -596,6 +793,7 @@ Scope {
                                                     overviewWindow.pressGlobalY = g.y
                                                     overviewWindow.dragGlobalX = g.x
                                                     overviewWindow.dragGlobalY = g.y
+                                                    overviewWindow.dropTargetWsId = wsCell.wsId
                                                 }
 
                                                 onPositionChanged: (mouse) => {
@@ -603,6 +801,8 @@ Scope {
                                                     const g = chipMouse.mapToItem(null, mouse.x, mouse.y)
                                                     overviewWindow.dragGlobalX = g.x
                                                     overviewWindow.dragGlobalY = g.y
+                                                    const target = overviewWindow.findDropTarget(g.x, g.y)
+                                                    overviewWindow.dropTargetWsId = target ? target.wsId : -1
                                                 }
 
                                                 onReleased: (mouse) => {
@@ -621,25 +821,29 @@ Scope {
                                                 }
                                             }
 
-                                            // Kapatma düğmesi (üzerine gelince görünür)
+                                            // Kapatma düğmesi (hover durumunda belirir)
                                             Rectangle {
                                                 visible: (chipMouse.containsMouse || closeArea.containsMouse)
                                                          && !overviewWindow.dragActive
-                                                         && chip.width > 44 && chip.height > 30
+                                                         && chip.width > 40 && chip.height > 28
                                                 anchors.top: parent.top
                                                 anchors.right: parent.right
-                                                anchors.margins: 3
-                                                width: 18
-                                                height: 18
-                                                radius: 9
-                                                color: closeArea.containsMouse ? Colors.danger : "#cc000000"
+                                                anchors.margins: Math.round(3 * SettingsState.scaleFactor)
+                                                width: Math.round(18 * SettingsState.scaleFactor)
+                                                height: Math.round(18 * SettingsState.scaleFactor)
+                                                radius: width / 2
+                                                color: closeArea.containsMouse ? Colors.danger : Qt.rgba(0, 0, 0, 0.75)
+                                                border.color: closeArea.containsMouse ? Colors.danger : Qt.rgba(1, 1, 1, 0.2)
+                                                border.width: 1
                                                 z: 5
+
+                                                Behavior on color { ColorAnimation { duration: 100 } }
 
                                                 Text {
                                                     anchors.centerIn: parent
                                                     text: "✕"
                                                     color: "#F5F5F5"
-                                                    font.pixelSize: 10
+                                                    font.pixelSize: Math.round(9 * SettingsState.scaleFactor)
                                                     font.bold: true
                                                 }
 
@@ -659,29 +863,69 @@ Scope {
                                         visible: wsCell.cellWindows.length === 0
                                         text: I18n.t("empty")
                                         color: Colors.foregroundMuted
-                                        font.pixelSize: 10
+                                        font.pixelSize: Math.round(10 * SettingsState.scaleFactor)
                                         font.italic: true
                                     }
                                 }
                             }
                         }
                     }
+                }
 
-                    // Alt satır: pencere başlığı ya da çalışma alanı bilgisi
-                    Text {
-                        visible: SettingsState.overviewShowCaption && overviewWindow.captionText !== ""
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        anchors.bottom: parent.bottom
-                        width: Math.min(implicitWidth, parent.width)
-                        text: overviewWindow.captionText
-                        color: "#F5F5F5"
-                        font.pixelSize: 13
-                        elide: Text.ElideRight
-                        horizontalAlignment: Text.AlignHCenter
+                // ==================== ALT BİLGİ & KISAYOL ŞERİDİ ====================
+                Rectangle {
+                    visible: SettingsState.overviewShowCaption
+                    anchors.bottom: parent.bottom
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    anchors.bottomMargin: Math.round(24 * SettingsState.scaleFactor)
+                    height: Math.round(36 * SettingsState.scaleFactor)
+                    width: Math.min(parent.width - 40, bottomRow.implicitWidth + Math.round(32 * SettingsState.scaleFactor))
+                    radius: Math.round(18 * SettingsState.scaleFactor)
+                    color: Qt.rgba(Colors.backgroundAlt.r, Colors.backgroundAlt.g, Colors.backgroundAlt.b, 0.90)
+                    border.color: Colors.border
+                    border.width: 1
+                    z: 100
+                    opacity: overviewWindow.openAmount
+
+                    RowLayout {
+                        id: bottomRow
+                        anchors.centerIn: parent
+                        spacing: Math.round(16 * SettingsState.scaleFactor)
+
+                        RowLayout {
+                            spacing: 6
+                            Text {
+                                text: overviewWindow.hoverWindowText !== "" ? "󰖲" : "󰍹"
+                                color: Colors.accent
+                                font.pixelSize: Math.round(13 * SettingsState.scaleFactor)
+                                font.family: "JetBrainsMono Nerd Font"
+                            }
+                            Text {
+                                text: overviewWindow.captionText
+                                color: "#F5F5F5"
+                                font.pixelSize: Math.round(12 * SettingsState.scaleFactor)
+                                font.bold: true
+                                elide: Text.ElideRight
+                                Layout.maximumWidth: Math.round(340 * SettingsState.scaleFactor)
+                            }
+                        }
+
+                        Rectangle {
+                            Layout.preferredWidth: 1
+                            Layout.preferredHeight: Math.round(16 * SettingsState.scaleFactor)
+                            color: Colors.border
+                        }
+
+                        Text {
+                            text: I18n.t("overviewShortcutsHint")
+                            color: Colors.foregroundMuted
+                            font.pixelSize: Math.round(11 * SettingsState.scaleFactor)
+                            font.family: "JetBrainsMono Nerd Font"
+                        }
                     }
                 }
 
-                // Menü açıkken dışarı basınca menüyü kapatır
+                // Menü açıkken dışarı basınca kapatma
                 MouseArea {
                     anchors.fill: parent
                     z: 900
@@ -689,29 +933,29 @@ Scope {
                     onPressed: overviewWindow.closeMenu()
                 }
 
-                // Sağ tık menüsü
+                // ==================== SAĞ TIK MENÜSÜ ====================
                 Rectangle {
                     id: ctxMenu
                     visible: overviewWindow.menuOpen
                     z: 1000
-                    width: 210
-                    height: menuCol.height + 16
+                    width: Math.round(220 * SettingsState.scaleFactor)
+                    height: menuCol.height + Math.round(16 * SettingsState.scaleFactor)
                     x: Math.max(8, Math.min(overviewWindow.menuX, overviewRoot.width - width - 8))
                     y: Math.max(8, Math.min(overviewWindow.menuY, overviewRoot.height - height - 8))
-                    radius: 10
-                    color: Colors.backgroundAlt
-                    border.color: Colors.border
+                    radius: Math.round(16 * SettingsState.scaleFactor)
+                    color: Qt.rgba(Colors.backgroundAlt.r, Colors.backgroundAlt.g, Colors.backgroundAlt.b, 0.96)
+                    border.color: Colors.accent
                     border.width: 1
 
                     Column {
                         id: menuCol
-                        x: 8
-                        y: 8
-                        width: parent.width - 16
-                        spacing: 2
+                        x: Math.round(8 * SettingsState.scaleFactor)
+                        y: Math.round(8 * SettingsState.scaleFactor)
+                        width: parent.width - Math.round(16 * SettingsState.scaleFactor)
+                        spacing: Math.round(4 * SettingsState.scaleFactor)
 
                         MenuRow {
-                            label: I18n.t("menuToggleFloat")
+                            label: "󰖲  " + I18n.t("menuToggleFloat")
                             onTriggered: {
                                 overviewWindow.toggleFloating(overviewWindow.menuAddress)
                                 overviewWindow.closeMenu()
@@ -719,7 +963,7 @@ Scope {
                         }
 
                         MenuRow {
-                            label: I18n.t("menuClose")
+                            label: "󰅖  " + I18n.t("menuClose")
                             labelColor: Colors.danger
                             onTriggered: {
                                 overviewWindow.closeWindow(overviewWindow.menuAddress)
@@ -736,14 +980,14 @@ Scope {
                         Text {
                             text: I18n.t("menuMoveTo")
                             color: Colors.foregroundMuted
-                            font.pixelSize: 10
-                            leftPadding: 10
-                            topPadding: 4
+                            font.pixelSize: Math.round(10 * SettingsState.scaleFactor)
+                            leftPadding: Math.round(10 * SettingsState.scaleFactor)
+                            topPadding: Math.round(4 * SettingsState.scaleFactor)
                         }
 
                         Flow {
                             width: parent.width
-                            spacing: 4
+                            spacing: Math.round(4 * SettingsState.scaleFactor)
 
                             Repeater {
                                 model: overviewWindow.wsCount
@@ -753,9 +997,9 @@ Scope {
                                     readonly property int n: index + 1
                                     readonly property bool isCurrent: n === overviewWindow.menuWsId
 
-                                    width: 28
-                                    height: 28
-                                    radius: 6
+                                    width: Math.round(28 * SettingsState.scaleFactor)
+                                    height: Math.round(28 * SettingsState.scaleFactor)
+                                    radius: Math.round(8 * SettingsState.scaleFactor)
                                     color: isCurrent ? Colors.surface0 : (numArea.containsMouse ? Colors.accent : Colors.hover)
                                     opacity: isCurrent ? 0.4 : 1
 
@@ -763,7 +1007,7 @@ Scope {
                                         anchors.centerIn: parent
                                         text: numBtn.n
                                         color: numArea.containsMouse && !numBtn.isCurrent ? Colors.accentText : "#F5F5F5"
-                                        font.pixelSize: 11
+                                        font.pixelSize: Math.round(11 * SettingsState.scaleFactor)
                                         font.bold: true
                                     }
 
@@ -784,24 +1028,24 @@ Scope {
                     }
                 }
 
-                // Sürüklenen pencerenin fareyi takip eden "hayalet" görseli
+                // ==================== SÜRÜKLEME HAYALETİ ====================
                 Rectangle {
                     visible: overviewWindow.dragActive
-                    width: 40
-                    height: 40
-                    radius: 6
+                    width: Math.round(54 * SettingsState.scaleFactor)
+                    height: Math.round(42 * SettingsState.scaleFactor)
+                    radius: Math.round(12 * SettingsState.scaleFactor)
                     color: Colors.accent
-                    border.color: "#F5F5F5"
+                    border.color: "#FFFFFF"
                     border.width: 2
-                    opacity: 0.85
+                    opacity: 0.92
                     z: 999
                     x: overviewWindow.dragGlobalX - width / 2
                     y: overviewWindow.dragGlobalY - height / 2
 
                     Image {
                         anchors.centerIn: parent
-                        width: 24
-                        height: 24
+                        width: Math.round(24 * SettingsState.scaleFactor)
+                        height: width
                         source: overviewWindow.iconFor(overviewWindow.dragAppId)
                         fillMode: Image.PreserveAspectFit
                         visible: source !== ""

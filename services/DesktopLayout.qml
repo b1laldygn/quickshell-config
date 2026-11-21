@@ -1,13 +1,14 @@
 // services/DesktopLayout.qml
 pragma Singleton
 import QtQuick
+import "root:/services"
 
 QtObject {
     id: root
 
     // Köşeye en yakın olan önce gelir
     readonly property var order: ["weather", "clock", "system", "media", "calendar"]
-    readonly property int gap: 12
+    readonly property int gap: Math.round(12 * SettingsState.scaleFactor)
 
     property var heights: ({})
     property int version: 0

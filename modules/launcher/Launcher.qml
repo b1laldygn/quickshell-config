@@ -316,8 +316,8 @@ Scope {
                 Rectangle {
                     anchors.centerIn: parent
                     anchors.verticalCenterOffset: -80
-                    width: 500
-                    height: 450
+                    width: Math.round(500 * SettingsState.scaleFactor)
+                    height: Math.round(450 * SettingsState.scaleFactor)
                     radius: 14
                     color: Colors.backgroundAlt
                     border.color: Colors.border

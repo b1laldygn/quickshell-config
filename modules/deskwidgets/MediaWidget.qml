@@ -36,13 +36,13 @@ Scope {
             Text {
                 text: I18n.t("nowPlaying")
                 color: Colors.foregroundMuted
-                font.pixelSize: 10
+                font.pixelSize: Math.round(10 * SettingsState.scaleFactor)
             }
 
             Text {
                 text: root.activePlayer?.trackTitle || ""
                 color: "#F5F5F5"
-                font.pixelSize: 15
+                font.pixelSize: Math.round(15 * SettingsState.scaleFactor)
                 font.bold: true
                 elide: Text.ElideRight
                 Layout.fillWidth: true
@@ -51,7 +51,7 @@ Scope {
             Text {
                 text: root.activePlayer?.trackArtist || ""
                 color: Colors.foregroundMuted
-                font.pixelSize: 12
+                font.pixelSize: Math.round(12 * SettingsState.scaleFactor)
                 elide: Text.ElideRight
                 Layout.fillWidth: true
                 visible: text !== ""
@@ -59,9 +59,9 @@ Scope {
 
             Rectangle {
                 Layout.fillWidth: true
-                Layout.topMargin: 8
-                implicitHeight: 5
-                radius: 2
+                Layout.topMargin: Math.round(8 * SettingsState.scaleFactor)
+                implicitHeight: Math.round(5 * SettingsState.scaleFactor)
+                radius: Math.round(2 * SettingsState.scaleFactor)
                 color: Colors.surface0
 
                 Rectangle {
@@ -71,7 +71,7 @@ Scope {
                         return parent.width * Math.min(1, root.activePlayer.position / len)
                     }
                     height: parent.height
-                    radius: 2
+                    radius: Math.round(2 * SettingsState.scaleFactor)
                     color: Colors.accent
                 }
 
@@ -89,13 +89,13 @@ Scope {
 
             RowLayout {
                 Layout.alignment: Qt.AlignHCenter
-                Layout.topMargin: 8
-                spacing: 22
+                Layout.topMargin: Math.round(8 * SettingsState.scaleFactor)
+                spacing: Math.round(22 * SettingsState.scaleFactor)
 
                 Text {
                     text: "󰒮"
                     color: root.activePlayer?.canGoPrevious ? "#F5F5F5" : "#585b70"
-                    font.pixelSize: 18
+                    font.pixelSize: Math.round(18 * SettingsState.scaleFactor)
                     font.family: "JetBrainsMono Nerd Font"
 
                     MouseArea {
@@ -108,7 +108,7 @@ Scope {
                 Text {
                     text: root.activePlayer?.isPlaying ? "󰏤" : "󰐊"
                     color: "#F5F5F5"
-                    font.pixelSize: 22
+                    font.pixelSize: Math.round(22 * SettingsState.scaleFactor)
                     font.family: "JetBrainsMono Nerd Font"
 
                     MouseArea {
@@ -121,7 +121,7 @@ Scope {
                 Text {
                     text: "󰒭"
                     color: root.activePlayer?.canGoNext ? "#F5F5F5" : "#585b70"
-                    font.pixelSize: 18
+                    font.pixelSize: Math.round(18 * SettingsState.scaleFactor)
                     font.family: "JetBrainsMono Nerd Font"
 
                     MouseArea {

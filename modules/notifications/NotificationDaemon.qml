@@ -18,15 +18,14 @@ Scope {
                 right: true
             }
             margins {
-                top: 44   // bar yüksekliğinin altından başlasın
-                right: 12
+                top: Math.round(44 * SettingsState.scaleFactor)
+                right: Math.round(12 * SettingsState.scaleFactor)
             }
 
-            implicitWidth: 320
+            implicitWidth: Math.round(340 * SettingsState.scaleFactor)
             implicitHeight: column.implicitHeight
             color: "transparent"
 
-            // WlrLayershell exclusiveZone: -1 -> diğer pencerelerden yer çalmasın
             WlrLayershell.exclusiveZone: -1
             WlrLayershell.layer: WlrLayer.Overlay
 
@@ -34,8 +33,8 @@ Scope {
                 id: column
                 anchors.right: parent.right
                 anchors.top: parent.top
-                spacing: 8
-                width: 320
+                spacing: Math.round(8 * SettingsState.scaleFactor)
+                width: Math.round(340 * SettingsState.scaleFactor)
 
                 Repeater {
                     model: NotificationService.notifications

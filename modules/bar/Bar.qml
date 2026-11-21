@@ -23,7 +23,7 @@ Scope {
                 left: true
                 right: true
             }
-            implicitHeight: SettingsState.barHeight
+            implicitHeight: Math.round(SettingsState.barHeight * SettingsState.scaleFactor)
             color: Qt.rgba(Colors.background.r, Colors.background.g, Colors.background.b, SettingsState.barOpacity / 100)
 
             // Sol: hızlı erişim ikonları + batarya

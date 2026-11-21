@@ -13,7 +13,7 @@ Scope {
         property string detail: ""
 
         Layout.fillWidth: true
-        spacing: 3
+        spacing: Math.round(3 * SettingsState.scaleFactor)
 
         RowLayout {
             Layout.fillWidth: true
@@ -21,27 +21,27 @@ Scope {
             Text {
                 text: row.label
                 color: "#F5F5F5"
-                font.pixelSize: 11
+                font.pixelSize: Math.round(11 * SettingsState.scaleFactor)
                 font.bold: true
                 Layout.fillWidth: true
             }
             Text {
                 text: row.detail
                 color: Colors.foregroundMuted
-                font.pixelSize: 10
+                font.pixelSize: Math.round(10 * SettingsState.scaleFactor)
             }
         }
 
         Rectangle {
             Layout.fillWidth: true
-            implicitHeight: 6
-            radius: 3
+            implicitHeight: Math.round(6 * SettingsState.scaleFactor)
+            radius: Math.round(3 * SettingsState.scaleFactor)
             color: Colors.surface0
 
             Rectangle {
                 width: parent.width * Math.max(0, Math.min(1, row.value))
                 height: parent.height
-                radius: 3
+                radius: Math.round(3 * SettingsState.scaleFactor)
                 color: row.value > 0.85 ? Colors.danger : Colors.accent
                 Behavior on width { NumberAnimation { duration: 300 } }
             }
@@ -62,9 +62,9 @@ Scope {
             Text {
                 text: I18n.t("systemStatus")
                 color: "#F5F5F5"
-                font.pixelSize: 14
+                font.pixelSize: Math.round(14 * SettingsState.scaleFactor)
                 font.bold: true
-                Layout.bottomMargin: 6
+                Layout.bottomMargin: Math.round(6 * SettingsState.scaleFactor)
             }
 
             UsageRow {
@@ -74,24 +74,24 @@ Scope {
             }
 
             UsageRow {
-                Layout.topMargin: 4
+                Layout.topMargin: Math.round(4 * SettingsState.scaleFactor)
                 label: "RAM"
                 value: SystemInfo.memUsage
                 detail: SystemInfo.memUsedGb.toFixed(1) + " / " + SystemInfo.memTotalGb.toFixed(1) + " GB"
             }
 
             UsageRow {
-                Layout.topMargin: 4
+                Layout.topMargin: Math.round(4 * SettingsState.scaleFactor)
                 label: "Disk"
                 value: SystemInfo.diskUsage
                 detail: SystemInfo.diskUsed + " / " + SystemInfo.diskTotal
             }
 
             Text {
-                Layout.topMargin: 8
+                Layout.topMargin: Math.round(8 * SettingsState.scaleFactor)
                 text: SystemInfo.uptime
                 color: Colors.foregroundMuted
-                font.pixelSize: 10
+                font.pixelSize: Math.round(10 * SettingsState.scaleFactor)
             }
         }
     }

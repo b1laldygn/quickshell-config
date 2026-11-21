@@ -19,14 +19,17 @@ Scope {
 
             PopupFx {
                 id: fx
-                open: SystemInfo.visible
+                open: SystemInfo.panelVisible
             }
 
             anchors { top: true; left: true }
-            margins { top: 44; left: 12 }
+            margins {
+                top: Math.round(44 * SettingsState.scaleFactor)
+                left: Math.max(8, Math.min(SystemInfo.anchorX - implicitWidth / 2, modelData.width - implicitWidth - 8))
+            }
 
-            implicitWidth: 300
-            implicitHeight: 340
+            implicitWidth: Math.round(300 * SettingsState.scaleFactor)
+            implicitHeight: Math.round(340 * SettingsState.scaleFactor)
             color: "transparent"
 
             WlrLayershell.layer: WlrLayer.Overlay
@@ -34,7 +37,7 @@ Scope {
 
             Rectangle {
                 anchors.fill: parent
-                radius: 12
+                radius: Math.round(12 * SettingsState.scaleFactor)
                 opacity: fx.cardOpacity
                 scale: fx.cardScale
                 transformOrigin: Item.Top
@@ -45,14 +48,42 @@ Scope {
 
                 ColumnLayout {
                     anchors.fill: parent
-                    anchors.margins: 14
-                    spacing: 10
+                    anchors.margins: Math.round(14 * SettingsState.scaleFactor)
+                    spacing: Math.round(10 * SettingsState.scaleFactor)
 
-                    Text {
-                        text: I18n.t("systemStatus")
-                        color: "#F5F5F5"
-                        font.pixelSize: 14
-                        font.bold: true
+                    RowLayout {
+                        Layout.fillWidth: true
+
+                        Text {
+                            text: I18n.t("systemStatus")
+                            color: "#F5F5F5"
+                            font.pixelSize: Math.round(14 * SettingsState.scaleFactor)
+                            font.bold: true
+                            Layout.fillWidth: true
+                        }
+
+                        // Kapat Butonu
+                        Rectangle {
+                            width: Math.round(20 * SettingsState.scaleFactor)
+                            height: Math.round(20 * SettingsState.scaleFactor)
+                            radius: 4
+                            color: closeHover.containsMouse ? Colors.hover : "transparent"
+
+                            Text {
+                                anchors.centerIn: parent
+                                text: "✕"
+                                color: closeHover.containsMouse ? Colors.danger : Colors.foregroundMuted
+                                font.pixelSize: Math.round(11 * SettingsState.scaleFactor)
+                            }
+
+                            MouseArea {
+                                id: closeHover
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: SystemInfo.panelVisible = false
+                            }
+                        }
                     }
 
                     // --- Kullanım çubukları ---
@@ -66,7 +97,7 @@ Scope {
 
                         ColumnLayout {
                             Layout.fillWidth: true
-                            spacing: 3
+                            spacing: Math.round(3 * SettingsState.scaleFactor)
 
                             RowLayout {
                                 Layout.fillWidth: true
@@ -74,27 +105,27 @@ Scope {
                                 Text {
                                     text: modelData.label
                                     color: "#F5F5F5"
-                                    font.pixelSize: 11
+                                    font.pixelSize: Math.round(11 * SettingsState.scaleFactor)
                                     Layout.fillWidth: true
                                 }
 
                                 Text {
                                     text: modelData.detail
                                     color: Colors.foregroundMuted
-                                    font.pixelSize: 10
+                                    font.pixelSize: Math.round(10 * SettingsState.scaleFactor)
                                 }
                             }
 
                             Rectangle {
                                 Layout.fillWidth: true
-                                height: 6
-                                radius: 3
+                                height: Math.round(6 * SettingsState.scaleFactor)
+                                radius: Math.round(3 * SettingsState.scaleFactor)
                                 color: Colors.surface0
 
                                 Rectangle {
                                     width: parent.width * Math.max(0, Math.min(1, modelData.value))
                                     height: parent.height
-                                    radius: 3
+                                    radius: Math.round(3 * SettingsState.scaleFactor)
                                     color: modelData.value > 0.85 ? Colors.danger : Colors.accent
 
                                     Behavior on width { NumberAnimation { duration: 300 } }
@@ -106,12 +137,12 @@ Scope {
                     // --- Yük ortalaması + çalışma süresi ---
                     RowLayout {
                         Layout.fillWidth: true
-                        Layout.topMargin: 4
+                        Layout.topMargin: Math.round(4 * SettingsState.scaleFactor)
 
                         Text {
                             text: I18n.t("loadAvg") + ": " + SystemInfo.loadAvg
                             color: Colors.foregroundMuted
-                            font.pixelSize: 10
+                            font.pixelSize: Math.round(10 * SettingsState.scaleFactor)
                             Layout.fillWidth: true
                         }
                     }
@@ -119,34 +150,34 @@ Scope {
                     Text {
                         text: SystemInfo.uptime
                         color: Colors.foregroundMuted
-                        font.pixelSize: 10
+                        font.pixelSize: Math.round(10 * SettingsState.scaleFactor)
                     }
 
                     // --- En çok CPU kullanan süreçler ---
                     Text {
                         text: I18n.t("topProcesses")
                         color: "#F5F5F5"
-                        font.pixelSize: 11
+                        font.pixelSize: Math.round(11 * SettingsState.scaleFactor)
                         font.bold: true
-                        Layout.topMargin: 6
+                        Layout.topMargin: Math.round(6 * SettingsState.scaleFactor)
                     }
 
                     ColumnLayout {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
-                        spacing: 4
+                        spacing: Math.round(4 * SettingsState.scaleFactor)
 
                         Repeater {
                             model: SystemInfo.topProcesses
 
                             RowLayout {
                                 Layout.fillWidth: true
-                                spacing: 6
+                                spacing: Math.round(6 * SettingsState.scaleFactor)
 
                                 Text {
                                     text: modelData.name
                                     color: "#F5F5F5"
-                                    font.pixelSize: 10
+                                    font.pixelSize: Math.round(10 * SettingsState.scaleFactor)
                                     elide: Text.ElideRight
                                     Layout.fillWidth: true
                                 }
@@ -154,13 +185,13 @@ Scope {
                                 Text {
                                     text: modelData.cpu + "%"
                                     color: Colors.accent
-                                    font.pixelSize: 10
+                                    font.pixelSize: Math.round(10 * SettingsState.scaleFactor)
                                 }
 
                                 Text {
                                     text: modelData.mem + "%"
                                     color: Colors.foregroundMuted
-                                    font.pixelSize: 10
+                                    font.pixelSize: Math.round(10 * SettingsState.scaleFactor)
                                 }
                             }
                         }

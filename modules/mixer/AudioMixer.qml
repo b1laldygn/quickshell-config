@@ -19,8 +19,8 @@ Scope {
             anchors { top: true; right: true }
             margins { top: 44; right: 12 }
 
-            implicitWidth: 320
-            implicitHeight: Math.min(520, 140 + streamList.contentHeight)
+            implicitWidth: Math.round(320 * SettingsState.scaleFactor)
+            implicitHeight: Math.min(Math.round(520 * SettingsState.scaleFactor), Math.round(140 * SettingsState.scaleFactor) + streamList.contentHeight)
             color: "transparent"
 
             WlrLayershell.layer: WlrLayer.Overlay

@@ -393,6 +393,7 @@ Scope {
                 property real minValue: 0
                 property real maxValue: 100
                 property real stepValue: 1
+                property string unit: ""
 
                 Layout.fillWidth: true
                 spacing: 4
@@ -407,7 +408,7 @@ Scope {
                         Layout.fillWidth: true
                     }
                     Text {
-                        text: SettingsState[stepper.settingKey]
+                        text: SettingsState[stepper.settingKey] + (stepper.unit ? (" " + stepper.unit) : "")
                         color: Colors.foregroundMuted
                         font.pixelSize: 11
                     }
@@ -539,8 +540,8 @@ Scope {
 
                 Rectangle {
                     anchors.centerIn: parent
-                    width: Math.min(780, parent.width * 0.88)
-                    height: Math.min(700, parent.height * 0.9)
+                    width: Math.min(Math.round(780 * SettingsState.scaleFactor), parent.width * 0.95)
+                    height: Math.min(Math.round(700 * SettingsState.scaleFactor), parent.height * 0.95)
                     radius: 16
                     color: Colors.backgroundAlt
                     border.color: Colors.border
@@ -710,14 +711,29 @@ Scope {
                                         Layout.fillWidth: true
                                         spacing: 12
 
-                                        SectionTitle { text: I18n.t("barAppearance") }
+                                        SectionTitle { text: I18n.t("guiScaleSection") }
+
+                                        StepperRow {
+                                            label: I18n.t("guiScale")
+                                            settingKey: "guiScale"
+                                            minValue: 75
+                                            maxValue: 150
+                                            stepValue: 5
+                                            unit: "%"
+                                        }
+
+                                        SectionTitle {
+                                            text: I18n.t("barAppearance")
+                                            Layout.topMargin: 6
+                                        }
 
                                         StepperRow {
                                             label: I18n.t("barHeight")
                                             settingKey: "barHeight"
                                             minValue: 28
-                                            maxValue: 40
+                                            maxValue: 44
                                             stepValue: 2
+                                            unit: "px"
                                         }
 
                                         StepperRow {
@@ -726,6 +742,7 @@ Scope {
                                             minValue: 30
                                             maxValue: 100
                                             stepValue: 5
+                                            unit: "%"
                                         }
 
                                         SectionTitle {
@@ -1092,6 +1109,313 @@ Scope {
                                         minValue: 10
                                         maxValue: 200
                                         stepValue: 10
+                                    }
+
+                                    // ---- Rahatsız Etmeyin (DND) ----
+                                    SectionTitle { text: I18n.t("dndLabel") }
+
+                                    ToggleRow {
+                                        label: I18n.t("dndLabel")
+                                        checked: SettingsState.dndEnabled
+                                        onToggled: {
+                                            SettingsState.dndEnabled = !SettingsState.dndEnabled
+                                            SettingsState.save()
+                                        }
+                                    }
+
+                                    SubLabel { text: I18n.t("dndHint") }
+
+                                    ToggleRow {
+                                        label: I18n.t("dndAllowCritical")
+                                        checked: SettingsState.dndAllowCritical
+                                        onToggled: {
+                                            SettingsState.dndAllowCritical = !SettingsState.dndAllowCritical
+                                            SettingsState.save()
+                                        }
+                                    }
+
+                                    // ---- Bildirim Sesleri ----
+                                    SectionTitle { text: I18n.t("notifSounds") }
+
+                                    ToggleRow {
+                                        label: I18n.t("notifSounds")
+                                        checked: SettingsState.notificationSounds
+                                        onToggled: {
+                                            SettingsState.notificationSounds = !SettingsState.notificationSounds
+                                            SettingsState.save()
+                                        }
+                                    }
+
+                                    SubLabel { text: I18n.t("notifSoundsHint") }
+
+                                    RowLayout {
+                                        Layout.fillWidth: true
+
+                                        Rectangle {
+                                            Layout.preferredHeight: 32
+                                            Layout.preferredWidth: testBtnRow.implicitWidth + 24
+                                            radius: 6
+                                            color: testBtnHover.containsMouse ? Colors.accent : Colors.surface0
+                                            Behavior on color { ColorAnimation { duration: 120 } }
+
+                                            RowLayout {
+                                                id: testBtnRow
+                                                anchors.centerIn: parent
+                                                spacing: 8
+                                                Text {
+                                                    text: "󰐊"
+                                                    color: testBtnHover.containsMouse ? Colors.accentText : "#F5F5F5"
+                                                    font.pixelSize: 13
+                                                    font.family: "JetBrainsMono Nerd Font"
+                                                }
+                                                Text {
+                                                    text: I18n.t("testSound")
+                                                    color: testBtnHover.containsMouse ? Colors.accentText : "#F5F5F5"
+                                                    font.pixelSize: 12
+                                                    font.bold: true
+                                                }
+                                            }
+
+                                            MouseArea {
+                                                id: testBtnHover
+                                                anchors.fill: parent
+                                                hoverEnabled: true
+                                                cursorShape: Qt.PointingHandCursor
+                                                onClicked: NotificationService.playSound("normal")
+                                            }
+                                        }
+                                    }
+
+                                    // ---- Uygulama Filtreleri ----
+                                    SectionTitle { text: I18n.t("notifFilters") }
+
+                                    // Sessize Alınan Uygulamalar
+                                    Text {
+                                        text: I18n.t("mutedApps")
+                                        color: "#F5F5F5"
+                                        font.pixelSize: 13
+                                        font.bold: true
+                                    }
+                                    SubLabel { text: I18n.t("mutedAppsHint") }
+
+                                    Flow {
+                                        Layout.fillWidth: true
+                                        spacing: 6
+                                        visible: (SettingsState.mutedApps || []).length > 0
+
+                                        Repeater {
+                                            model: SettingsState.mutedApps || []
+                                            Rectangle {
+                                                radius: 6
+                                                color: Colors.surface0
+                                                implicitWidth: mutedTagRow.implicitWidth + 14
+                                                implicitHeight: 26
+
+                                                RowLayout {
+                                                    id: mutedTagRow
+                                                    anchors.centerIn: parent
+                                                    spacing: 6
+                                                    Text {
+                                                        text: "󰝟 " + modelData
+                                                        color: "#F5F5F5"
+                                                        font.pixelSize: 11
+                                                    }
+                                                    Text {
+                                                        text: "✕"
+                                                        color: Colors.danger
+                                                        font.pixelSize: 10
+                                                        MouseArea {
+                                                            anchors.fill: parent
+                                                            cursorShape: Qt.PointingHandCursor
+                                                            onClicked: NotificationService.unmuteApp(modelData)
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    RowLayout {
+                                        Layout.fillWidth: true
+                                        spacing: 8
+
+                                        Rectangle {
+                                            Layout.fillWidth: true
+                                            Layout.preferredHeight: 32
+                                            radius: 6
+                                            color: Colors.surface0
+                                            border.color: muteInput.activeFocus ? Colors.accent : Colors.border
+                                            border.width: 1
+
+                                            TextInput {
+                                                id: muteInput
+                                                anchors.fill: parent
+                                                anchors.leftMargin: 8
+                                                anchors.rightMargin: 8
+                                                verticalAlignment: TextInput.AlignVCenter
+                                                color: "#F5F5F5"
+                                                font.pixelSize: 12
+                                                clip: true
+                                                selectByMouse: true
+                                                onAccepted: {
+                                                    if (text.trim() !== "") {
+                                                        NotificationService.muteApp(text.trim())
+                                                        text = ""
+                                                    }
+                                                }
+                                            }
+
+                                            Text {
+                                                visible: muteInput.text === "" && !muteInput.activeFocus
+                                                anchors.verticalCenter: parent.verticalCenter
+                                                anchors.left: parent.left
+                                                anchors.leftMargin: 8
+                                                text: I18n.t("addAppPlaceholder")
+                                                color: Colors.foregroundMuted
+                                                font.pixelSize: 11
+                                            }
+                                        }
+
+                                        Rectangle {
+                                            Layout.preferredWidth: 32
+                                            Layout.preferredHeight: 32
+                                            radius: 6
+                                            color: muteAddHover.containsMouse ? Colors.accent : Colors.surface0
+                                            Text {
+                                                anchors.centerIn: parent
+                                                text: "+"
+                                                color: muteAddHover.containsMouse ? Colors.accentText : "#F5F5F5"
+                                                font.pixelSize: 16
+                                                font.bold: true
+                                            }
+                                            MouseArea {
+                                                id: muteAddHover
+                                                anchors.fill: parent
+                                                hoverEnabled: true
+                                                cursorShape: Qt.PointingHandCursor
+                                                onClicked: {
+                                                    if (muteInput.text.trim() !== "") {
+                                                        NotificationService.muteApp(muteInput.text.trim())
+                                                        muteInput.text = ""
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    // Engellenen Uygulamalar (Kara Liste)
+                                    Text {
+                                        Layout.topMargin: 8
+                                        text: I18n.t("blockedApps")
+                                        color: "#F5F5F5"
+                                        font.pixelSize: 13
+                                        font.bold: true
+                                    }
+                                    SubLabel { text: I18n.t("blockedAppsHint") }
+
+                                    Flow {
+                                        Layout.fillWidth: true
+                                        spacing: 6
+                                        visible: (SettingsState.blockedApps || []).length > 0
+
+                                        Repeater {
+                                            model: SettingsState.blockedApps || []
+                                            Rectangle {
+                                                radius: 6
+                                                color: Colors.surface0
+                                                implicitWidth: blockTagRow.implicitWidth + 14
+                                                implicitHeight: 26
+
+                                                RowLayout {
+                                                    id: blockTagRow
+                                                    anchors.centerIn: parent
+                                                    spacing: 6
+                                                    Text {
+                                                        text: "󰅙 " + modelData
+                                                        color: "#F5F5F5"
+                                                        font.pixelSize: 11
+                                                    }
+                                                    Text {
+                                                        text: "✕"
+                                                        color: Colors.danger
+                                                        font.pixelSize: 10
+                                                        MouseArea {
+                                                            anchors.fill: parent
+                                                            cursorShape: Qt.PointingHandCursor
+                                                            onClicked: NotificationService.unblockApp(modelData)
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    RowLayout {
+                                        Layout.fillWidth: true
+                                        spacing: 8
+
+                                        Rectangle {
+                                            Layout.fillWidth: true
+                                            Layout.preferredHeight: 32
+                                            radius: 6
+                                            color: Colors.surface0
+                                            border.color: blockInput.activeFocus ? Colors.accent : Colors.border
+                                            border.width: 1
+
+                                            TextInput {
+                                                id: blockInput
+                                                anchors.fill: parent
+                                                anchors.leftMargin: 8
+                                                anchors.rightMargin: 8
+                                                verticalAlignment: TextInput.AlignVCenter
+                                                color: "#F5F5F5"
+                                                font.pixelSize: 12
+                                                clip: true
+                                                selectByMouse: true
+                                                onAccepted: {
+                                                    if (text.trim() !== "") {
+                                                        NotificationService.blockApp(text.trim())
+                                                        text = ""
+                                                    }
+                                                }
+                                            }
+
+                                            Text {
+                                                visible: blockInput.text === "" && !blockInput.activeFocus
+                                                anchors.verticalCenter: parent.verticalCenter
+                                                anchors.left: parent.left
+                                                anchors.leftMargin: 8
+                                                text: I18n.t("addAppPlaceholder")
+                                                color: Colors.foregroundMuted
+                                                font.pixelSize: 11
+                                            }
+                                        }
+
+                                        Rectangle {
+                                            Layout.preferredWidth: 32
+                                            Layout.preferredHeight: 32
+                                            radius: 6
+                                            color: blockAddHover.containsMouse ? Colors.accent : Colors.surface0
+                                            Text {
+                                                anchors.centerIn: parent
+                                                text: "+"
+                                                color: blockAddHover.containsMouse ? Colors.accentText : "#F5F5F5"
+                                                font.pixelSize: 16
+                                                font.bold: true
+                                            }
+                                            MouseArea {
+                                                id: blockAddHover
+                                                anchors.fill: parent
+                                                hoverEnabled: true
+                                                cursorShape: Qt.PointingHandCursor
+                                                onClicked: {
+                                                    if (blockInput.text.trim() !== "") {
+                                                        NotificationService.blockApp(blockInput.text.trim())
+                                                        blockInput.text = ""
+                                                    }
+                                                }
+                                            }
+                                        }
                                     }
                                 }
 

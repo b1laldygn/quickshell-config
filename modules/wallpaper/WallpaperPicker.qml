@@ -163,21 +163,42 @@ Scope {
                             clip: true
                             cellWidth: 160
                             cellHeight: 110
+                            focus: true
+                            keyNavigationEnabled: true
+                            highlightFollowsCurrentItem: true
+                            highlightMoveDuration: 100
+
+                            onCurrentIndexChanged: {
+                                if (currentIndex >= 0) {
+                                    positionViewAtIndex(currentIndex, GridView.Contain)
+                                }
+                            }
+
+                            Keys.onReturnPressed: pickerWindow.applyCurrent()
+                            Keys.onEnterPressed: pickerWindow.applyCurrent()
+                            Keys.onSpacePressed: pickerWindow.applyCurrent()
+                            Keys.onEscapePressed: WallpaperPickerState.visible = false
 
                             delegate: Rectangle {
                                 id: cell
                                 readonly property string originalName: fileName.slice(0, -4)
                                 readonly property bool isActive: originalName === pickerWindow.activeName
+                                readonly property bool isCurrent: GridView.isCurrentItem
+                                readonly property bool isHovered: hoverArea.containsMouse
+                                readonly property bool isSelectedOrHovered: isHovered || isCurrent
 
                                 width: grid.cellWidth - 10
                                 height: grid.cellHeight - 10
                                 radius: 8
-                                color: Colors.surface0
+                                color: isSelectedOrHovered ? Colors.hover : Colors.surface0
                                 border.color: isActive
                                     ? Colors.accent
-                                    : (hoverArea.containsMouse ? Colors.foregroundMuted : "transparent")
+                                    : (isSelectedOrHovered ? Colors.foregroundMuted : "transparent")
                                 border.width: 2
                                 clip: true
+
+                                Behavior on color { ColorAnimation { duration: 120 } }
+                                Behavior on border.color { ColorAnimation { duration: 120 } }
 
                                 Image {
                                     anchors.fill: parent
@@ -201,7 +222,7 @@ Scope {
                                     Text {
                                         anchors.centerIn: parent
                                         text: "✓"
-                                        color: "#F5F5F5"
+                                        color: Colors.accent
                                         font.pixelSize: 11
                                         font.bold: true
                                     }
@@ -213,12 +234,16 @@ Scope {
                                     hoverEnabled: true
                                     cursorShape: Qt.PointingHandCursor
 
-                                    onEntered: pickerWindow.hoveredName = fileName
+                                    onEntered: {
+                                        pickerWindow.hoveredName = fileName
+                                        grid.currentIndex = index
+                                    }
                                     onExited: {
                                         if (pickerWindow.hoveredName === fileName) pickerWindow.hoveredName = ""
                                     }
 
                                     onClicked: {
+                                        grid.currentIndex = index
                                         WallpaperService.setWallpaper(WallpaperThumbs.sourceDir + "/" + cell.originalName)
                                         WallpaperPickerState.visible = false
                                     }

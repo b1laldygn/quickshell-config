@@ -24,6 +24,8 @@ QtObject {
     // ---- Bar ----
     property int barHeight: 34
     property int barOpacity: 100
+    property int guiScale: 100
+    readonly property real scaleFactor: Math.max(0.7, Math.min(1.6, guiScale / 100.0))
 
     // ---- Genel / performans ----
     property int volumePollInterval: 50
@@ -55,9 +57,14 @@ QtObject {
     property string dateFormat: "long"
     property string weekStart: "mon"
 
-    // ---- Bildirimler ----
+    // ---- Bildirimler & Filtreler ----
     property int notificationTimeout: 5
     property int notificationHistoryLimit: 50
+    property bool notificationSounds: true
+    property bool dndEnabled: false
+    property bool dndAllowCritical: true
+    property var blockedApps: []
+    property var mutedApps: []
 
     // ---- Overview ----
     property int overviewWorkspaceCount: 10
@@ -76,7 +83,7 @@ QtObject {
         "showWeather", "showSystemMonitor", "showMediaControls", "showBattery",
         "showNotificationBell", "showSysTray",
         "useDynamicTheme", "fixedAccentColor", "fixedBackgroundColor", "language",
-        "barHeight", "barOpacity",
+        "barHeight", "barOpacity", "guiScale",
         "volumePollInterval", "brightnessPollInterval", "weatherRefreshMinutes",
         "wallpaperTransition", "wallpaperTransitionDuration", "wallpaperDir",
         "showDesktopWidgets", "desktopWidgetCorner",
@@ -86,6 +93,8 @@ QtObject {
         "showCalendarWidget", "calendarWidgetCorner",
         "use24h", "barClockSeconds", "deskClockSeconds", "dateFormat", "weekStart",
         "notificationTimeout", "notificationHistoryLimit",
+        "notificationSounds", "dndEnabled", "dndAllowCritical",
+        "blockedApps", "mutedApps",
         "overviewWorkspaceCount", "overviewColumns", "overviewCellWidth",
         "overviewHideEmpty", "overviewLivePreview", "overviewShowCaption",
         "popupAnimation", "popupAnimDuration"    ]

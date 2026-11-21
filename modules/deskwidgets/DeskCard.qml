@@ -12,7 +12,7 @@ PanelWindow {
     property string widgetId: ""
     property bool shown: true
     property string corner: "top-right"
-    property int cardWidth: 260
+    property int cardWidth: Math.round(260 * SettingsState.scaleFactor)
     default property alias content: body.data
 
     visible: shown
@@ -26,14 +26,14 @@ PanelWindow {
         right: corner.includes("right")
     }
     margins {
-        top: 60 + (corner.includes("top") ? stackOffset : 0)
-        bottom: 40 + (corner.includes("bottom") ? stackOffset : 0)
-        left: 30
-        right: 30
+        top: Math.round(60 * SettingsState.scaleFactor) + (corner.includes("top") ? stackOffset : 0)
+        bottom: Math.round(40 * SettingsState.scaleFactor) + (corner.includes("bottom") ? stackOffset : 0)
+        left: Math.round(30 * SettingsState.scaleFactor)
+        right: Math.round(30 * SettingsState.scaleFactor)
     }
 
     implicitWidth: cardWidth
-    implicitHeight: body.implicitHeight + 32
+    implicitHeight: body.implicitHeight + Math.round(32 * SettingsState.scaleFactor)
     color: "transparent"
 
     WlrLayershell.layer: WlrLayer.Bottom
@@ -49,7 +49,7 @@ PanelWindow {
 
     Rectangle {
         anchors.fill: parent
-        radius: 16
+        radius: Math.round(16 * SettingsState.scaleFactor)
         color: Qt.rgba(Colors.backgroundAlt.r, Colors.backgroundAlt.g, Colors.backgroundAlt.b, 0.82)
         border.color: Colors.border
         border.width: 1
@@ -59,8 +59,8 @@ PanelWindow {
             anchors.left: parent.left
             anchors.right: parent.right
             anchors.top: parent.top
-            anchors.margins: 16
-            spacing: 4
+            anchors.margins: Math.round(16 * SettingsState.scaleFactor)
+            spacing: Math.round(4 * SettingsState.scaleFactor)
         }
     }
 }

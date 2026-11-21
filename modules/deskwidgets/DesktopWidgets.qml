@@ -21,17 +21,17 @@ Scope {
                 visible: WeatherState.loaded && WeatherState.cityName !== ""
                 text: WeatherState.cityName
                 color: Colors.foregroundMuted
-                font.pixelSize: 11
+                font.pixelSize: Math.round(11 * SettingsState.scaleFactor)
             }
 
             RowLayout {
                 visible: WeatherState.loaded
-                spacing: 12
+                spacing: Math.round(12 * SettingsState.scaleFactor)
 
                 Text {
                     text: WeatherState.icon
                     color: "#F5F5F5"
-                    font.pixelSize: 34
+                    font.pixelSize: Math.round(34 * SettingsState.scaleFactor)
                     font.family: "JetBrainsMono Nerd Font"
                 }
 
@@ -41,16 +41,16 @@ Scope {
                     Text {
                         text: Math.round(WeatherState.tempC) + "°C"
                         color: "#F5F5F5"
-                        font.pixelSize: 24
+                        font.pixelSize: Math.round(24 * SettingsState.scaleFactor)
                         font.bold: true
                     }
 
                     Text {
                         text: WeatherState.condition
                         color: Colors.foregroundMuted
-                        font.pixelSize: 11
+                        font.pixelSize: Math.round(11 * SettingsState.scaleFactor)
                         elide: Text.ElideRight
-                        Layout.maximumWidth: 150
+                        Layout.maximumWidth: Math.round(150 * SettingsState.scaleFactor)
                     }
                 }
             }
@@ -58,30 +58,30 @@ Scope {
             Rectangle {
                 visible: WeatherState.loaded
                 Layout.fillWidth: true
-                Layout.topMargin: 6
-                Layout.bottomMargin: 4
+                Layout.topMargin: Math.round(6 * SettingsState.scaleFactor)
+                Layout.bottomMargin: Math.round(4 * SettingsState.scaleFactor)
                 implicitHeight: 1
                 color: Colors.border
             }
 
             RowLayout {
                 visible: WeatherState.loaded
-                spacing: 12
+                spacing: Math.round(12 * SettingsState.scaleFactor)
 
                 Text {
                     text: I18n.t("feelsLike") + " " + Math.round(WeatherState.feelsLikeC) + "°"
                     color: Colors.foregroundMuted
-                    font.pixelSize: 10
+                    font.pixelSize: Math.round(10 * SettingsState.scaleFactor)
                 }
                 Text {
                     text: I18n.t("humidity") + " " + WeatherState.humidity + "%"
                     color: Colors.foregroundMuted
-                    font.pixelSize: 10
+                    font.pixelSize: Math.round(10 * SettingsState.scaleFactor)
                 }
                 Text {
                     text: I18n.t("wind") + " " + Math.round(WeatherState.windKmh)
                     color: Colors.foregroundMuted
-                    font.pixelSize: 10
+                    font.pixelSize: Math.round(10 * SettingsState.scaleFactor)
                 }
             }
 
@@ -89,7 +89,7 @@ Scope {
                 visible: !WeatherState.loaded
                 text: "..."
                 color: Colors.foregroundMuted
-                font.pixelSize: 12
+                font.pixelSize: Math.round(12 * SettingsState.scaleFactor)
             }
         }
     }

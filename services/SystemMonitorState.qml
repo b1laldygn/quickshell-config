@@ -1,10 +1,14 @@
+// services/SystemMonitorState.qml
 pragma Singleton
-import Quickshell
+import QtQuick
+import "root:/services"
 
-Singleton {
-    property bool visible: false
+QtObject {
+    id: root
+    property bool visible: SystemInfo.panelVisible
+    property real anchorX: SystemInfo.anchorX
 
     function toggle() {
-        visible = !visible
+        SystemInfo.togglePanel()
     }
 }
