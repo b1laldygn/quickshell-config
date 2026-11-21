@@ -1,175 +1,177 @@
 # 🖥️ Hyprland & Quickshell Dotfiles
 
-Hyprland pencere yöneticisi ve tamamen özel yapım **Quickshell** masaüstü kabuğunu kullanan kişisel Linux dotfiles koleksiyonu.
+Personal Linux dotfiles featuring a fully custom-built **Quickshell** desktop shell and a modular **Hyprland** window manager configuration.
+
+> 🇹🇷 Türkçe dokümantasyon için: [README.tr.md](README.tr.md)
 
 ---
 
-## ✨ Özellikler
+## ✨ Features
 
 ### 🔧 Top Bar
-- **Çalışma Alanı (Workspace) Göstergesi** — aktif, dolu ve boş workspace'ler görsel olarak ayrıştırılmış
-- **Sistem Monitörü** — CPU / RAM / Disk / GPU anlık kullanım; bar simgesine tıkla → detay panel açılır
-- **Medya Kontrolleri** — MPRIS üzerinden oynatma/durdurma/ileri/geri; kapak fotoğrafı gösterimi
-- **Hava Durumu** — açık hava durumu, sıcaklık; tıklayınca detay paneli açılır
-- **Pil Göstergesi** — şarj yüzdesi ve durum simgesi (laptop kullanımı için)
-- **Bildirim Zili** — okunmamış bildirim sayısı, sağ tık ile Rahatsız Etme (DND) modunu aç/kapat
-- **Sistem Tepsisi (SysTray)** — arka planda çalışan uygulamaların simgeleri
-- **Saat** — 12/24 saat formatı, saniye gösterimi, bar yüksekliği ve opaklık ayarlanabilir
-- **Hızlı Geçiş Düğmeleri (QuickToggles)** — Ses, Bluetooth, Ağ, Pano, Duvar Kağıdı seçici
+- **Workspace Indicator** — active, occupied and empty workspaces visually differentiated
+- **System Monitor** — real-time CPU / RAM / Disk / GPU usage; click icon → detail panel
+- **Media Controls** — MPRIS playback controls (play/pause/prev/next) with cover art
+- **Weather Widget** — current weather and temperature; click for a detailed panel
+- **Battery Indicator** — charge percentage and status icon
+- **Notification Bell** — unread notification count; right-click to toggle Do Not Disturb
+- **System Tray** — icons for background applications
+- **Clock** — 12/24-hour format, optional seconds display, configurable height & opacity
+- **Quick Toggles** — Audio, Bluetooth, Network, Clipboard, Wallpaper picker
 
 ---
 
-### 🖱️ Masaüstü Widgetları
-Tüm widgetlar **GUI ölçek faktörüne** göre otomatik büyür/küçülür. Köşe konumları ayarlanabilir.
+### 🖱️ Desktop Widgets
+All widgets scale automatically with the **GUI scale factor**. Corner position is configurable per widget.
 
-| Widget | Açıklama |
+| Widget | Description |
 |---|---|
-| **DeskCard** | Opaklık ayarlı ana kart kapsayıcısı |
-| **ClockWidget** | Analog veya dijital saat, masaüstü köşesine sabitleme |
-| **SystemWidget** | CPU, RAM, Disk canlı grafikler |
-| **MediaWidget** | Şu an çalan parça; kapak fotoğrafı, ilerleme çubuğu |
-| **CalendarWidget** | Aylık takvim görünümü |
+| **DeskCard** | Main card container with adjustable opacity |
+| **ClockWidget** | Analog or digital clock, pinned to a desktop corner |
+| **SystemWidget** | Live CPU, RAM, Disk graphs |
+| **MediaWidget** | Now playing: cover art, title, progress bar |
+| **CalendarWidget** | Monthly calendar view |
 
 ---
 
 ### 🗂️ Overview (Mission Control)
-- 10 workspace'in tüm pencereleri tek ekranda grid görünümü
-- Canlı pencere önizlemesi (ScreencopyView)
-- Sürükle-bırak ile pencere taşıma
-- Hover animasyonu, aktif workspace vurgusu
-- Boş workspace gizleme seçeneği
-- Sağ tık bağlam menüsü (Taşı, Kapat)
-- Klavye kısayolları: `[1–0]` workspace seç, `[Enter]` geç, `[Esc]` kapat, `[Drag]` taşı
-- **Yuvarlak köşeler** — `OpacityMask` ile wallpaper da dahil tüm içerik kırpılır
+- Grid view of all windows across up to 10 workspaces
+- Live window previews via ScreencopyView
+- Drag & drop window movement between workspaces
+- Hover animations, active workspace highlight
+- Option to hide empty workspaces
+- Right-click context menu (Move, Close)
+- Keyboard shortcuts: `[1–0]` select workspace · `[Enter]` switch · `[Esc]` close · `[Drag]` move
+- **True rounded corners** — wallpaper and all content clipped via `OpacityMask`
 
 ---
 
-### 🔔 Bildirimler
-- **Bildirim Popup'ları** — urgency renkli şerit (düşük/normal/kritik), uygulama adı rozeti, hızlı sessize al
-- **Bildirim Merkezi** — geçmiş, canlı arama çubuğu, uygulama filtre pill'leri, toplu temizle
-- **DND (Rahatsız Etme)** — bar zili sağ tık veya ayarlardan; kritik bildirimleri izin ver seçeneği
-- **Ses Efektleri** — bildirim tipine göre `pw-play` / `paplay` ile sistem sesi çalma
-- **Uygulama Sessize Alma** — belirli uygulamalardan gelen bildirimler sessiz; tarihçede gösterilir
-- **Uygulama Engelleme** — belirli uygulamalardan gelen bildirimler tamamen engellenir
+### 🔔 Notifications
+- **Popup Notifications** — urgency color strip (low / normal / critical), app name badge, quick mute button
+- **Notification Center** — history, live search bar, per-app filter pills, bulk clear
+- **Do Not Disturb (DND)** — toggle from the bell icon (right-click) or Settings; allow critical override
+- **Sound Effects** — system sounds played via `pw-play` / `paplay` based on notification type
+- **App Muting** — notifications from specific apps are silenced (still stored in history)
+- **App Blocking** — notifications from specific apps are blocked entirely
 
 ---
 
-### 🚀 Uygulama Başlatıcı (Launcher)
-- Yüklü uygulamaları ara ve başlat
-- Canlı filtreleme, klavye navigasyonu
+### 🚀 App Launcher
+- Search and launch installed applications
+- Live filtering, full keyboard navigation
 
 ---
 
-### 🔊 Ses Mikseri (Audio Mixer)
-- Tüm aktif ses akışlarının ayrı ayrı ses seviyesi
-- Giriş/çıkış cihazı seçimi
+### 🔊 Audio Mixer
+- Individual volume control for every active audio stream
+- Input / output device selection
 
 ---
 
-### 📋 Pano Yöneticisi (Clipboard)
-- Pano geçmişi, tek tık ile yapıştırma
+### 📋 Clipboard Manager
+- Clipboard history with one-click paste
 
 ---
 
-### 🌐 Ağ Yöneticisi
-- Wi-Fi ağ listesi, bağlan/ayır
+### 🌐 Network Manager
+- Wi-Fi network list, connect / disconnect
 
 ---
 
-### 🔵 Bluetooth Yöneticisi
-- Eşleşmiş ve keşfedilen cihazlar, bağlan/ayır
+### 🔵 Bluetooth Manager
+- Paired and discovered devices, connect / disconnect
 
 ---
 
 ### 💡 OSD (On-Screen Display)
-- Ses seviyesi, parlaklık, mikrofon değiştiğinde animasyonlu gösterge
+- Animated volume, brightness and microphone indicator overlays
 
 ---
 
-### ⌨️ Alt-Tab Geçiş
-- Pencereler arası görsel geçiş, `Alt+Tab` / `Alt+Shift+Tab`
+### ⌨️ Alt-Tab Switcher
+- Visual window switcher, `Alt+Tab` / `Alt+Shift+Tab`
 
 ---
 
-### ⌨️ Keybind Görüntüleyici
-- Tanımlı tüm kısayolların overlay listesi
+### ⌨️ Keybind Viewer
+- Overlay list of all defined keyboard shortcuts
 
 ---
 
-### 🖼️ Duvar Kağıdı Seçici
-- Dizinden resim seç, geçiş animasyonları (`outer`, `fade`, `wipe` vb.)
-- Küçük resim (thumbnail) önizleme
+### 🖼️ Wallpaper Picker
+- Browse images from a configured directory with thumbnail previews
+- Transition animations: `outer`, `fade`, `wipe`, and more
 
 ---
 
-### 🌦️ Hava Durumu Paneli
-- Şehir bazlı hava durumu detayları, ikonlar, günlük tahmin
+### 🌦️ Weather Panel
+- City-based weather details, icons, daily forecast
 
 ---
 
-### 📊 Sistem Monitörü Paneli
-- CPU / RAM / Disk / Ağ / GPU canlı istatistikler
-- Bar simgesine tıkla → konuma sabitlenmiş açılır panel
+### 📊 System Monitor Panel
+- Live CPU / RAM / Disk / Network / GPU statistics
+- Click the bar icon → panel anchors near the click position
 
 ---
 
-### ⚙️ Ayarlar Paneli
-Kapsamlı görsel ayar arayüzü. Tüm ayarlar `settings.json` dosyasına otomatik kalıcı olarak kaydedilir.
+### ⚙️ Settings Panel
+Full visual settings UI. All settings are automatically persisted to `settings.json`.
 
-| Sekme | Ayarlar |
+| Tab | Settings |
 |---|---|
-| **Görünüm** | Dinamik tema, accent rengi, arka plan rengi |
-| **Bar** | Yükseklik, opaklık, hangi elemanların gösterileceği |
-| **GUI Ölçeği** | %70 – %160 aralığında tüm arayüzü büyüt/küçült |
-| **Saat & Tarih** | 12/24 saat, saniye, tarih formatı, haftanın başlangıcı |
-| **Widget'lar** | Her widget için aç/kapat, köşe konumu |
-| **Bildirimler** | DND, kritik izni, ses efektleri, sessize alınan & engellenen uygulamalar |
-| **Overview** | Workspace sayısı, sütun sayısı, canlı önizleme, boş gizle |
-| **Duvar Kağıdı** | Dizin, geçiş tipi, geçiş süresi |
-| **Hava Durumu** | Yenileme aralığı |
-| **Dil** | Türkçe / İngilizce (tüm arayüz) |
+| **Appearance** | Dynamic theme, accent color, background color |
+| **Bar** | Height, opacity, which elements to show |
+| **GUI Scale** | Scale the entire UI from 70 % to 160 % |
+| **Clock & Date** | 12/24 h, seconds, date format, week start day |
+| **Widgets** | Enable/disable each widget, corner position |
+| **Notifications** | DND, critical override, sound effects, muted & blocked apps |
+| **Overview** | Workspace count, columns, live preview, hide empty |
+| **Wallpaper** | Directory, transition type, transition duration |
+| **Weather** | Refresh interval |
+| **Language** | Turkish / English (entire UI) |
 
 ---
 
-## 📂 Proje Yapısı
+## 📂 Project Structure
 
 ```text
 myconfig/
-├── shell.qml                   # Ana giriş noktası
-├── settings.json               # Kalıcı ayarlar (otomatik oluşturulur)
+├── shell.qml                   # Main entry point
+├── settings.json               # Persisted settings (auto-generated)
 ├── config/
-│   └── Colors.qml              # Renk paleti (dinamik tema desteği)
-├── services/                   # Singleton servisler & state yönetimi
-│   ├── SettingsState.qml       # Tüm ayarlar, GUI ölçeği, persist
-│   ├── NotificationService.qml # DND, ses efektleri, engelleme/sessize alma
-│   ├── WallpaperService.qml    # Duvar kağıdı yönetimi
-│   ├── DynamicTheme.qml        # Duvar kağıdından otomatik renk çıkarma
+│   └── Colors.qml              # Color palette (dynamic theme support)
+├── services/                   # Singleton services & state management
+│   ├── SettingsState.qml       # All settings, GUI scale, persistence
+│   ├── NotificationService.qml # DND, sound effects, mute/block logic
+│   ├── WallpaperService.qml    # Wallpaper management
+│   ├── DynamicTheme.qml        # Auto color extraction from wallpaper
 │   ├── SystemInfo.qml          # CPU/RAM/Disk/GPU polling
-│   ├── SystemMonitorState.qml  # Sistem monitörü panel state
-│   ├── WeatherState.qml        # Hava durumu API
-│   ├── AudioMixerState.qml     # Ses mikseri state
-│   ├── AudioDeviceListState.qml# Ses cihazları
+│   ├── SystemMonitorState.qml  # System monitor panel state
+│   ├── WeatherState.qml        # Weather API
+│   ├── AudioMixerState.qml     # Audio mixer state
+│   ├── AudioDeviceListState.qml# Audio devices
 │   ├── BluetoothStatus.qml     # Bluetooth state
-│   ├── BluetoothListState.qml  # Bluetooth cihaz listesi
-│   ├── NetworkState.qml        # Ağ state
-│   ├── ClipboardState.qml      # Pano state
-│   ├── CalendarState.qml       # Takvim state
+│   ├── BluetoothListState.qml  # Bluetooth device list
+│   ├── NetworkState.qml        # Network state
+│   ├── ClipboardState.qml      # Clipboard state
+│   ├── CalendarState.qml       # Calendar state
 │   ├── AltTabState.qml         # Alt-Tab state
 │   ├── OverviewState.qml       # Overview state
-│   ├── LauncherState.qml       # Başlatıcı state
-│   ├── PowerMenuState.qml      # Güç menüsü state
-│   ├── KeybindsState.qml       # Keybind listesi state
-│   ├── OsdService.qml          # OSD tetikleyici
-│   ├── DesktopLayout.qml       # Masaüstü widget düzeni
-│   ├── Battery.qml             # Pil durumu
-│   ├── WifiStatus.qml          # Wi-Fi durum
-│   ├── I18n.qml                # Çoklu dil (TR/EN)
-│   ├── TimeFormat.qml          # Saat/tarih formatlama
-│   ├── TimeSettings.qml        # Zaman ayarları
-│   ├── WallpaperPickerState.qml# Duvar kağıdı seçici state
-│   └── WallpaperThumbs.qml     # Küçük resim üretici
-└── modules/                    # UI modülleri
-    ├── bar/                    # Top bar elemanları
+│   ├── LauncherState.qml       # Launcher state
+│   ├── PowerMenuState.qml      # Power menu state
+│   ├── KeybindsState.qml       # Keybind list state
+│   ├── OsdService.qml          # OSD trigger
+│   ├── DesktopLayout.qml       # Desktop widget layout
+│   ├── Battery.qml             # Battery status
+│   ├── WifiStatus.qml          # Wi-Fi status
+│   ├── I18n.qml                # Internationalization (TR/EN)
+│   ├── TimeFormat.qml          # Time/date formatting
+│   ├── TimeSettings.qml        # Time settings
+│   ├── WallpaperPickerState.qml# Wallpaper picker state
+│   └── WallpaperThumbs.qml     # Thumbnail generator
+└── modules/                    # UI modules
+    ├── bar/                    # Top bar components
     │   ├── Bar.qml
     │   ├── Workspaces.qml
     │   ├── SystemMonitor.qml
@@ -180,142 +182,141 @@ myconfig/
     │   ├── SysTray.qml
     │   ├── Clock.qml
     │   └── QuickToggles.qml
-    ├── deskwidgets/            # Masaüstü widgetları
+    ├── deskwidgets/            # Desktop widgets
     │   ├── DesktopWidgets.qml
     │   ├── DeskCard.qml
     │   ├── ClockWidget.qml
     │   ├── SystemWidget.qml
     │   ├── MediaWidget.qml
     │   └── CalendarWidget.qml
-    ├── overview/               # Mission Control görünümü
+    ├── overview/               # Mission Control view
     │   ├── Overview.qml
     │   └── OverviewIpc.qml
-    ├── notifications/          # Bildirim sistemi
+    ├── notifications/          # Notification system
     │   ├── NotificationPopup.qml
     │   ├── NotificationCenter.qml
     │   └── NotificationDaemon.qml
-    ├── settings/               # Ayarlar paneli
+    ├── settings/               # Settings panel
     │   ├── Settings.qml
     │   └── SettingsIpc.qml
-    ├── sysmon/                 # Sistem monitörü paneli
+    ├── sysmon/                 # System monitor panel
     │   └── SystemMonitorPanel.qml
-    ├── launcher/               # Uygulama başlatıcı
+    ├── launcher/               # App launcher
     │   ├── Launcher.qml
     │   └── LauncherIpc.qml
-    ├── audio/                  # Ses cihaz listesi
+    ├── audio/                  # Audio device list
     │   ├── AudioDeviceList.qml
     │   └── AudioDeviceIpc.qml
-    ├── mixer/                  # Ses mikseri
+    ├── mixer/                  # Audio mixer
     │   ├── AudioMixer.qml
     │   └── MixerIpc.qml
-    ├── bluetooth/              # Bluetooth yöneticisi
+    ├── bluetooth/              # Bluetooth manager
     │   ├── BluetoothList.qml
     │   └── BluetoothIpc.qml
-    ├── network/                # Ağ yöneticisi
+    ├── network/                # Network manager
     │   ├── NetworkList.qml
     │   └── NetworkIpc.qml
-    ├── clipboard/              # Pano yöneticisi
+    ├── clipboard/              # Clipboard manager
     │   ├── ClipboardPicker.qml
     │   └── ClipboardIpc.qml
-    ├── wallpaper/              # Duvar kağıdı seçici
+    ├── wallpaper/              # Wallpaper picker
     │   ├── WallpaperPicker.qml
     │   └── WallpaperIpc.qml
-    ├── weather/                # Hava durumu paneli
+    ├── weather/                # Weather panel
     │   └── WeatherPanel.qml
-    ├── calendar/               # Takvim
+    ├── calendar/               # Calendar
     │   └── Calendar.qml
     ├── osd/                    # On-Screen Display
     │   └── Osd.qml
-    ├── alttab/                 # Alt-Tab geçişi
+    ├── alttab/                 # Alt-Tab switcher
     │   ├── AltTabOverlay.qml
     │   └── AltTabIpc.qml
-    ├── keybinds/               # Keybind görüntüleyici
+    ├── keybinds/               # Keybind viewer
     │   ├── KeybindsOverlay.qml
     │   └── KeybindsIpc.qml
-    ├── powermenu/              # Güç menüsü
+    ├── powermenu/              # Power menu
     │   ├── PowerMenu.qml
     │   └── PowerMenuIpc.qml
     └── common/
-        └── PopupFx.qml         # Paylaşımlı popup animasyonu
+        └── PopupFx.qml         # Shared popup animation component
 ```
 
 ---
 
-## 🚀 Kurulum
+## 🚀 Getting Started
 
-### Gereksinimler
+### Prerequisites
 
 ```bash
-# Zorunlu
+# Required
 hyprland
-quickshell          # QML tabanlı masaüstü kabuğu
-hyprpaper           # Duvar kağıdı
-hyprlock            # Ekran kilidi
-hypridle            # Boşta kalma yönetimi
+quickshell          # QML-based desktop shell toolkit
+hyprpaper           # Wallpaper daemon
+hyprlock            # Screen locker
+hypridle            # Idle manager
 
-# Ses (bildirim sesleri için)
-pipewire            # pw-play komutu
-# veya
-pulseaudio          # paplay komutu
+# Audio (for notification sounds)
+pipewire            # provides pw-play
+# or
+pulseaudio          # provides paplay
 
-# Fontlar
-ttf-jetbrains-mono-nerd   # veya herhangi bir Nerd Font
+# Fonts
+# Any Nerd Font (JetBrainsMono Nerd Font recommended)
 ```
 
-### Kurulum Adımları
+### Installation
 
 ```bash
-# 1. Repoyu klonla
-git clone https://github.com/KULLANICI/REPO.git ~/.config/quickshell/myconfig
+# 1. Clone the repository
+git clone https://github.com/YOUR_USER/YOUR_REPO.git ~/.config/quickshell/myconfig
 
-# 2. Hyprland yapılandırmasını yerleştir
-# ~/.config/hypr/ klasörüne kopyala
+# 2. Place Hyprland configuration
+# Copy contents to ~/.config/hypr/
 
-# 3. Quickshell'i başlat
+# 3. Launch Quickshell
 quickshell -c ~/.config/quickshell/myconfig/shell.qml
 
-# 4. Hyprland oturumunu yeniden başlat veya
+# 4. Or reload a running instance
 qs reload
 ```
 
 ---
 
-## 🛠️ Özelleştirme
+## 🛠️ Customization
 
-### Renkler & Tema
-- **Dinamik Tema:** Duvar kağıdından otomatik renk çıkarma (`services/DynamicTheme.qml`)
-- **Sabit Tema:** `settings.json` → `fixedAccentColor` / `fixedBackgroundColor`
-- **Renk Paleti:** `config/Colors.qml` dosyasını doğrudan düzenle
+### Colors & Theme
+- **Dynamic Theme:** Automatic color extraction from the current wallpaper (`services/DynamicTheme.qml`)
+- **Fixed Theme:** Edit `fixedAccentColor` / `fixedBackgroundColor` in `settings.json`
+- **Color Palette:** Directly edit `config/Colors.qml`
 
-### GUI Ölçeği
-Tüm arayüz `SettingsState.scaleFactor` ile ölçeklenir (ayarlar panelinden %70–%160).  
-Yeni bir piksel değeri eklerken: `Math.round(N * SettingsState.scaleFactor)`
+### GUI Scale
+The entire UI scales via `SettingsState.scaleFactor` (70 %–160 % from the Settings panel).  
+When adding new pixel values: `Math.round(N * SettingsState.scaleFactor)`
 
-### Dil (i18n)
-`services/I18n.qml` → `tr` ve `en` bloklarına anahtar ekle.  
-QML dosyalarında: `I18n.t("anahtarAdı")`
+### Internationalization (i18n)
+Add keys to both `tr` and `en` blocks in `services/I18n.qml`.  
+Use in QML: `I18n.t("keyName")`
 
-### Bildirim Sesleri
-`/usr/share/sounds/freedesktop/stereo/` dizinindeki `.oga` dosyaları kullanılır.  
-`pw-play` yoksa `paplay` ile fallback yapılır.
+### Notification Sounds
+Sounds from `/usr/share/sounds/freedesktop/stereo/` are played via `pw-play` with a fallback to `paplay`.
 
 ---
 
-## ⌨️ Varsayılan Kısayollar
+## ⌨️ Default Keybindings
 
-> Hyprland keybind'lerinize göre farklılık gösterebilir.
+> May differ depending on your Hyprland keybind configuration.
 
-| Kısayol | Eylem |
+| Shortcut | Action |
 |---|---|
-| `Super + Tab` | Overview (Mission Control) aç/kapat |
-| `Alt + Tab` | Alt-Tab pencere geçişi |
-| `Super + D` | Uygulama başlatıcı |
-| `Super + Shift + E` | Güç menüsü |
-| `Super + N` | Bildirim merkezi |
-| `Super + S` | Ayarlar paneli |
+| `Super + Tab` | Toggle Overview (Mission Control) |
+| `Alt + Tab` | Alt-Tab window switcher |
+| `Super + D` | App launcher |
+| `Super + Shift + E` | Power menu |
+| `Super + N` | Notification center |
+| `Super + S` | Settings panel |
 
 ---
 
-## 📄 Lisans
+## 📄 License
 
-MIT License — dilediğiniz gibi kullanın, katkı ekleyin.
+Distributed under the MIT License. Use, fork, and contribute freely.
