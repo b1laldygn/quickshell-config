@@ -27,12 +27,15 @@ Scope {
             color: "transparent"
 
             WlrLayershell.layer: WlrLayer.Overlay
-            WlrLayershell.keyboardFocus: WlrKeyboardFocus.OnDemand
+            WlrLayershell.keyboardFocus: AudioDeviceListState.visible ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
 
             property var sinks: []
             property var sources: []
 
-            function refresh() { statusProc.running = true }
+            function refresh() {
+                if (!statusProc.running) statusProc.running = true
+            }
+
             onVisibleChanged: {
                 if (visible) {
                     refresh()
@@ -87,7 +90,7 @@ Scope {
 
             Item {
                 anchors.fill: parent
-                focus: audioWindow.visible
+                focus: AudioDeviceListState.visible
                 Keys.onEscapePressed: AudioDeviceListState.visible = false
 
                 MouseArea {
@@ -96,18 +99,20 @@ Scope {
                 }
 
                 Rectangle {
+                    id: card
+                    readonly property real s: SettingsState.scaleFactor
                     anchors.top: parent.top
                     anchors.left: parent.left
-                    anchors.topMargin: 44    // NOT: bar yüksekliğine göre ayarla
-                    anchors.leftMargin: 130  // NOT: ses ikonunun gerçek x konumuna göre ayarla
-                    width: 300
-                    height: 520
-                    radius: 14
+                    anchors.topMargin: Math.round((SettingsState.barHeight + 8) * s)
+                    anchors.leftMargin: Math.max(8, Math.min(AudioDeviceListState.anchorX - width / 2, parent.width - width - 8))
+                    width: Math.round(330 * s)
+                    height: Math.min(Math.round(540 * s), Math.round(mainColumn.implicitHeight + 30 * s))
+                    radius: Math.round(14 * s)
                     opacity: fx.cardOpacity
                     scale: fx.cardScale
                     transformOrigin: Item.Top
                     transform: Translate { y: fx.cardY }
-                    color: Colors.backgroundAlt
+                    color: Qt.rgba(Colors.backgroundAlt.r, Colors.backgroundAlt.g, Colors.backgroundAlt.b, 0.96)
                     border.color: Colors.border
                     border.width: 1
 
@@ -115,7 +120,7 @@ Scope {
 
                     Flickable {
                         anchors.fill: parent
-                        anchors.margins: 12
+                        anchors.margins: Math.round(14 * card.s)
                         contentWidth: width
                         contentHeight: mainColumn.implicitHeight
                         clip: true
@@ -124,24 +129,54 @@ Scope {
                         ColumnLayout {
                             id: mainColumn
                             width: parent.width
-                            spacing: 10
+                            spacing: Math.round(10 * card.s)
 
+                            // ── Başlık ───────────────────────────────────────
                             RowLayout {
                                 Layout.fillWidth: true
+                                spacing: Math.round(8 * card.s)
+
+                                Rectangle {
+                                    width: Math.round(26 * card.s)
+                                    height: width
+                                    radius: Math.round(8 * card.s)
+                                    color: Qt.rgba(Colors.accent.r, Colors.accent.g, Colors.accent.b, 0.16)
+
+                                    Text {
+                                        anchors.centerIn: parent
+                                        text: AudioMixerState.masterMuted ? "󰝟" : "󰕾"
+                                        color: Colors.accent
+                                        font.pixelSize: Math.round(13 * card.s)
+                                        font.family: "JetBrainsMono Nerd Font"
+                                    }
+                                }
+
                                 Text {
                                     text: I18n.t("audioDevices")
-                                    color: "#F5F5F5"
-                                    font.pixelSize: 13
+                                    color: Colors.foreground
+                                    font.pixelSize: Math.round(14 * card.s)
                                     font.bold: true
                                     Layout.fillWidth: true
                                 }
-                                Text {
-                                    text: "󰑓"
-                                    color: "#F5F5F5"
-                                    font.pixelSize: 14
-                                    font.family: "JetBrainsMono Nerd Font"
+
+                                Rectangle {
+                                    width: Math.round(24 * card.s)
+                                    height: width
+                                    radius: Math.round(6 * card.s)
+                                    color: refreshHover.containsMouse ? Colors.hover : "transparent"
+
+                                    Text {
+                                        anchors.centerIn: parent
+                                        text: "󰑓"
+                                        color: Colors.foregroundMuted
+                                        font.pixelSize: Math.round(13 * card.s)
+                                        font.family: "JetBrainsMono Nerd Font"
+                                    }
+
                                     MouseArea {
+                                        id: refreshHover
                                         anchors.fill: parent
+                                        hoverEnabled: true
                                         cursorShape: Qt.PointingHandCursor
                                         onClicked: {
                                             audioWindow.refresh()
@@ -150,13 +185,36 @@ Scope {
                                         }
                                     }
                                 }
+
+                                Rectangle {
+                                    width: Math.round(24 * card.s)
+                                    height: width
+                                    radius: Math.round(6 * card.s)
+                                    color: closeHover.containsMouse ? Qt.rgba(Colors.danger.r, Colors.danger.g, Colors.danger.b, 0.18) : "transparent"
+
+                                    Text {
+                                        anchors.centerIn: parent
+                                        text: "✕"
+                                        color: closeHover.containsMouse ? Colors.danger : Colors.foregroundMuted
+                                        font.pixelSize: Math.round(11 * card.s)
+                                    }
+
+                                    MouseArea {
+                                        id: closeHover
+                                        anchors.fill: parent
+                                        hoverEnabled: true
+                                        cursorShape: Qt.PointingHandCursor
+                                        onClicked: AudioDeviceListState.visible = false
+                                    }
+                                }
                             }
 
+                            // ── Ana Ses Kartı ────────────────────────────────
                             Rectangle {
                                 id: volumeCard
                                 Layout.fillWidth: true
-                                implicitHeight: 50
-                                radius: 8
+                                implicitHeight: Math.round(56 * card.s)
+                                radius: Math.round(10 * card.s)
                                 color: Colors.surface0
 
                                 property real localVolume: AudioMixerState.masterVolume
@@ -171,16 +229,17 @@ Scope {
 
                                 ColumnLayout {
                                     anchors.fill: parent
-                                    anchors.margins: 8
-                                    spacing: 4
+                                    anchors.margins: Math.round(10 * card.s)
+                                    spacing: Math.round(6 * card.s)
 
                                     RowLayout {
                                         Layout.fillWidth: true
+                                        spacing: Math.round(6 * card.s)
 
                                         Text {
                                             text: AudioMixerState.masterMuted ? "󰝟" : "󰕾"
-                                            color: "#F5F5F5"
-                                            font.pixelSize: 13
+                                            color: AudioMixerState.masterMuted ? Colors.danger : Colors.accent
+                                            font.pixelSize: Math.round(14 * card.s)
                                             font.family: "JetBrainsMono Nerd Font"
 
                                             MouseArea {
@@ -191,23 +250,37 @@ Scope {
                                         }
 
                                         Text {
-                                            text: AudioMixerState.masterMuted ? I18n.t("muted") : Math.round(volumeCard.localVolume * 100) + "%"
-                                            color: AudioMixerState.masterMuted ? Colors.danger : "#F5F5F5"
-                                            font.pixelSize: 11
+                                            text: I18n.t("systemVolume")
+                                            color: Colors.foreground
+                                            font.pixelSize: Math.round(11 * card.s)
+                                            font.bold: true
                                             Layout.fillWidth: true
+                                        }
+
+                                        Text {
+                                            text: AudioMixerState.masterMuted ? I18n.t("muted") : Math.round(volumeCard.localVolume * 100) + "%"
+                                            color: AudioMixerState.masterMuted ? Colors.danger : Colors.accent
+                                            font.pixelSize: Math.round(11 * card.s)
+                                            font.bold: true
+
+                                            MouseArea {
+                                                anchors.fill: parent
+                                                cursorShape: Qt.PointingHandCursor
+                                                onClicked: AudioMixerState.toggleMasterMute()
+                                            }
                                         }
                                     }
 
                                     Rectangle {
                                         Layout.fillWidth: true
-                                        height: 8
-                                        radius: 4
+                                        height: Math.round(8 * card.s)
+                                        radius: height / 2
                                         color: Colors.hover
 
                                         Rectangle {
                                             width: parent.width * Math.min(1, volumeCard.localVolume)
                                             height: parent.height
-                                            radius: 4
+                                            radius: height / 2
                                             color: AudioMixerState.masterMuted ? Colors.foregroundMuted : Colors.accent
 
                                             Behavior on width {
@@ -226,18 +299,19 @@ Scope {
                                                 AudioMixerState.setMasterVolume(Math.round(ratio * 100))
                                             }
 
-                                            onPressed: (mouse) => updateFromX(mouse.x)
+                                            onPressed: (mouse) => { volumeCard.dragging = true; updateFromX(mouse.x) }
                                             onPositionChanged: (mouse) => { if (pressed) updateFromX(mouse.x) }
-                                            onReleased: AudioMixerState.refreshMaster()
+                                            onReleased: { volumeCard.dragging = false; AudioMixerState.refreshMaster() }
                                         }
                                     }
                                 }
                             }
 
+                            // ── Çıkış Cihazları ──────────────────────────────
                             Text {
                                 text: I18n.t("output")
-                                color: Colors.foregroundMuted
-                                font.pixelSize: 10
+                                color: Colors.accent
+                                font.pixelSize: Math.round(10 * card.s)
                                 font.bold: true
                             }
 
@@ -245,26 +319,40 @@ Scope {
                                 model: audioWindow.sinks
                                 delegate: Rectangle {
                                     Layout.fillWidth: true
-                                    height: 36
-                                    radius: 8
-                                    color: sinkArea.containsMouse ? Colors.hover : "transparent"
+                                    height: Math.round(36 * card.s)
+                                    radius: Math.round(8 * card.s)
+                                    color: modelData.isDefault
+                                        ? Qt.rgba(Colors.accent.r, Colors.accent.g, Colors.accent.b, 0.14)
+                                        : (sinkArea.containsMouse ? Colors.hover : Colors.surface0)
+                                    border.color: modelData.isDefault ? Qt.rgba(Colors.accent.r, Colors.accent.g, Colors.accent.b, 0.45) : "transparent"
+                                    border.width: 1
 
                                     RowLayout {
                                         anchors.fill: parent
-                                        anchors.margins: 8
-                                        spacing: 8
+                                        anchors.leftMargin: Math.round(10 * card.s)
+                                        anchors.rightMargin: Math.round(10 * card.s)
+                                        spacing: Math.round(8 * card.s)
+
                                         Text {
                                             text: modelData.isDefault ? "󰕾" : "󰓃"
-                                            color: modelData.isDefault ? Colors.accent : "#F5F5F5"
-                                            font.pixelSize: 13
+                                            color: modelData.isDefault ? Colors.accent : Colors.foreground
+                                            font.pixelSize: Math.round(13 * card.s)
                                             font.family: "JetBrainsMono Nerd Font"
                                         }
                                         Text {
                                             text: modelData.name
-                                            color: modelData.isDefault ? Colors.accent : "#F5F5F5"
-                                            font.pixelSize: 12
+                                            color: modelData.isDefault ? Colors.accent : Colors.foreground
+                                            font.pixelSize: Math.round(11 * card.s)
+                                            font.bold: modelData.isDefault
                                             Layout.fillWidth: true
                                             elide: Text.ElideRight
+                                        }
+                                        Text {
+                                            visible: modelData.isDefault
+                                            text: "󰄬"
+                                            color: Colors.accent
+                                            font.pixelSize: Math.round(12 * card.s)
+                                            font.family: "JetBrainsMono Nerd Font"
                                         }
                                     }
 
@@ -278,38 +366,53 @@ Scope {
                                 }
                             }
 
+                            // ── Giriş Cihazları ──────────────────────────────
                             Text {
                                 text: I18n.t("input")
-                                color: Colors.foregroundMuted
-                                font.pixelSize: 10
+                                color: Colors.accent
+                                font.pixelSize: Math.round(10 * card.s)
                                 font.bold: true
-                                Layout.topMargin: 6
+                                Layout.topMargin: Math.round(4 * card.s)
                             }
 
                             Repeater {
                                 model: audioWindow.sources
                                 delegate: Rectangle {
                                     Layout.fillWidth: true
-                                    height: 36
-                                    radius: 8
-                                    color: sourceArea.containsMouse ? Colors.hover : "transparent"
+                                    height: Math.round(36 * card.s)
+                                    radius: Math.round(8 * card.s)
+                                    color: modelData.isDefault
+                                        ? Qt.rgba(Colors.accent.r, Colors.accent.g, Colors.accent.b, 0.14)
+                                        : (sourceArea.containsMouse ? Colors.hover : Colors.surface0)
+                                    border.color: modelData.isDefault ? Qt.rgba(Colors.accent.r, Colors.accent.g, Colors.accent.b, 0.45) : "transparent"
+                                    border.width: 1
 
                                     RowLayout {
                                         anchors.fill: parent
-                                        anchors.margins: 8
-                                        spacing: 8
+                                        anchors.leftMargin: Math.round(10 * card.s)
+                                        anchors.rightMargin: Math.round(10 * card.s)
+                                        spacing: Math.round(8 * card.s)
+
                                         Text {
                                             text: "󰍬"
-                                            color: modelData.isDefault ? Colors.accent : "#F5F5F5"
-                                            font.pixelSize: 13
+                                            color: modelData.isDefault ? Colors.accent : Colors.foreground
+                                            font.pixelSize: Math.round(13 * card.s)
                                             font.family: "JetBrainsMono Nerd Font"
                                         }
                                         Text {
                                             text: modelData.name
-                                            color: modelData.isDefault ? Colors.accent : "#F5F5F5"
-                                            font.pixelSize: 12
+                                            color: modelData.isDefault ? Colors.accent : Colors.foreground
+                                            font.pixelSize: Math.round(11 * card.s)
+                                            font.bold: modelData.isDefault
                                             Layout.fillWidth: true
                                             elide: Text.ElideRight
+                                        }
+                                        Text {
+                                            visible: modelData.isDefault
+                                            text: "󰄬"
+                                            color: Colors.accent
+                                            font.pixelSize: Math.round(12 * card.s)
+                                            font.family: "JetBrainsMono Nerd Font"
                                         }
                                     }
 
@@ -327,13 +430,14 @@ Scope {
                                 Layout.fillWidth: true
                                 height: 1
                                 color: Colors.border
-                                Layout.topMargin: 4
+                                Layout.topMargin: Math.round(4 * card.s)
                             }
 
+                            // ── Uygulama Sesleri ─────────────────────────────
                             Text {
                                 text: I18n.t("appVolumes")
-                                color: Colors.foregroundMuted
-                                font.pixelSize: 10
+                                color: Colors.accent
+                                font.pixelSize: Math.round(10 * card.s)
                                 font.bold: true
                             }
 
@@ -341,7 +445,7 @@ Scope {
                                 visible: AudioMixerState.streams.length === 0
                                 text: I18n.t("noAppsPlaying")
                                 color: Colors.foregroundMuted
-                                font.pixelSize: 11
+                                font.pixelSize: Math.round(11 * card.s)
                                 font.italic: true
                             }
 
@@ -351,8 +455,8 @@ Scope {
                                 Rectangle {
                                     id: streamCard
                                     Layout.fillWidth: true
-                                    implicitHeight: 56
-                                    radius: 8
+                                    implicitHeight: Math.round(54 * card.s)
+                                    radius: Math.round(9 * card.s)
                                     color: Colors.surface0
 
                                     property real localVolume: modelData.volume
@@ -367,16 +471,16 @@ Scope {
 
                                     ColumnLayout {
                                         anchors.fill: parent
-                                        anchors.margins: 8
-                                        spacing: 4
+                                        anchors.margins: Math.round(8 * card.s)
+                                        spacing: Math.round(5 * card.s)
 
                                         RowLayout {
                                             Layout.fillWidth: true
 
                                             Text {
                                                 text: modelData.appName
-                                                color: "#F5F5F5"
-                                                font.pixelSize: 11
+                                                color: Colors.foreground
+                                                font.pixelSize: Math.round(11 * card.s)
                                                 font.bold: true
                                                 elide: Text.ElideRight
                                                 Layout.fillWidth: true
@@ -385,7 +489,7 @@ Scope {
                                             Text {
                                                 text: modelData.muted ? I18n.t("muted") : Math.round(streamCard.localVolume * 100) + "%"
                                                 color: modelData.muted ? Colors.danger : Colors.foregroundMuted
-                                                font.pixelSize: 10
+                                                font.pixelSize: Math.round(10 * card.s)
 
                                                 MouseArea {
                                                     anchors.fill: parent
@@ -397,14 +501,14 @@ Scope {
 
                                         Rectangle {
                                             Layout.fillWidth: true
-                                            height: 6
-                                            radius: 3
+                                            height: Math.round(6 * card.s)
+                                            radius: height / 2
                                             color: Colors.hover
 
                                             Rectangle {
                                                 width: parent.width * Math.min(1, streamCard.localVolume)
                                                 height: parent.height
-                                                radius: 3
+                                                radius: height / 2
                                                 color: modelData.muted ? Colors.foregroundMuted : Colors.accent
 
                                                 Behavior on width {
@@ -439,8 +543,6 @@ Scope {
                                     }
                                 }
                             }
-
-                            Item { Layout.fillHeight: true }
                         }
                     }
                 }

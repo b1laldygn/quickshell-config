@@ -16,14 +16,21 @@ Item {
         anchors.centerIn: parent
         text: TimeFormat.full(root.now, SettingsState.barClockSeconds)
         color: "#cdd6f4"
-        font.pixelSize: 13
+        font.pixelSize: Math.round(13 * SettingsState.scaleFactor)
         onImplicitWidthChanged: if (implicitWidth > root.maxW) root.maxW = implicitWidth
     }
 
     MouseArea {
         anchors.fill: parent
         cursorShape: Qt.PointingHandCursor
-        onClicked: CalendarState.toggle()
+        onClicked: {
+            NetworkState.visible = false
+            AudioDeviceListState.visible = false
+            BluetoothListState.visible = false
+            SystemInfo.panelVisible = false
+            WeatherPanelState.visible = false
+            CalendarState.toggle()
+        }
     }
 
     Timer {

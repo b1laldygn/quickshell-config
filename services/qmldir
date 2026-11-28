@@ -27,3 +27,4 @@ singleton DesktopLayout 1.0 DesktopLayout.qml
 singleton TimeFormat 1.0 TimeFormat.qml
 singleton TimeSettings 1.0 TimeSettings.qml
 singleton SystemMonitorState 1.0 SystemMonitorState.qml
+singleton ScratchpadState 1.0 ScratchpadState.qml

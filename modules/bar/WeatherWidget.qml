@@ -6,33 +6,33 @@ import "root:/services"
 
 Rectangle {
     id: root
-    implicitWidth: content.implicitWidth + 12
-    implicitHeight: 26
-    radius: 6
+    implicitWidth: content.implicitWidth + Math.round(12 * SettingsState.scaleFactor)
+    implicitHeight: Math.round(26 * SettingsState.scaleFactor)
+    radius: Math.round(6 * SettingsState.scaleFactor)
     visible: WeatherState.loaded
-    color: hoverArea.containsMouse ? Colors.hover : "transparent"
+    color: hoverArea.containsMouse || WeatherPanelState.visible ? Colors.hover : "transparent"
     Behavior on color { ColorAnimation { duration: 120 } }
 
     RowLayout {
         id: content
         anchors.centerIn: parent
-        spacing: 5
+        spacing: Math.round(5 * SettingsState.scaleFactor)
 
         Text {
             text: WeatherState.icon
-            color: "#F5F5F5"
-            font.pixelSize: 14
+            color: WeatherPanelState.visible ? Colors.accent : Colors.foreground
+            font.pixelSize: Math.round(14 * SettingsState.scaleFactor)
             font.family: "JetBrainsMono Nerd Font"
         }
 
         Text {
             text: Math.round(WeatherState.tempC) + "°"
-            color: "#F5F5F5"
-            font.pixelSize: 11
+            color: WeatherPanelState.visible ? Colors.accent : Colors.foreground
+            font.pixelSize: Math.round(11 * SettingsState.scaleFactor)
         }
     }
 
-        MouseArea {
+    MouseArea {
         id: hoverArea
         anchors.fill: parent
         hoverEnabled: true
@@ -40,6 +40,11 @@ Rectangle {
         onClicked: {
             const pos = root.mapToItem(null, root.width / 2, root.height)
             WeatherPanelState.anchorX = pos.x
+            NetworkState.visible = false
+            AudioDeviceListState.visible = false
+            BluetoothListState.visible = false
+            SystemInfo.panelVisible = false
+            CalendarState.visible = false
             WeatherPanelState.toggle()
         }
     }

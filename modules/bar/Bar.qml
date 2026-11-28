@@ -69,6 +69,8 @@ Scope {
                     visible: SettingsState.showNotificationBell
                 }
 
+                ScratchpadButton {}
+
                 SysTray {
                     trayWindow: bar
                     visible: SettingsState.showSysTray

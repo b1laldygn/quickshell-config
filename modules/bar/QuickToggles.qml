@@ -8,25 +8,34 @@ import "root:/services"
 
 RowLayout {
     id: root
-    spacing: 10
+    spacing: Math.round(8 * SettingsState.scaleFactor)
 
     property real currentBrightness: 0.5
+
+    function closeOtherPopovers(exceptName) {
+        if (exceptName !== "network") NetworkState.visible = false
+        if (exceptName !== "audio") AudioDeviceListState.visible = false
+        if (exceptName !== "bluetooth") BluetoothListState.visible = false
+        if (exceptName !== "sysmon") SystemInfo.panelVisible = false
+        if (exceptName !== "weather") WeatherPanelState.visible = false
+        if (exceptName !== "calendar") CalendarState.visible = false
+    }
 
     // ---- WIFI ----
     Rectangle {
         id: wifiBtn
         Layout.alignment: Qt.AlignVCenter
-        width: 26
-        height: 26
-        radius: 6
-        color: wifiHover.containsMouse ? Colors.hover : "transparent"
+        width: Math.round(26 * SettingsState.scaleFactor)
+        height: width
+        radius: Math.round(6 * SettingsState.scaleFactor)
+        color: wifiHover.containsMouse || NetworkState.visible ? Colors.hover : "transparent"
         Behavior on color { ColorAnimation { duration: 120 } }
 
         Text {
             anchors.centerIn: parent
             text: WifiStatus.connected ? "󰖩" : "󰖪"
-            color: Colors.foreground
-            font.pixelSize: 14
+            color: NetworkState.visible ? Colors.accent : Colors.foreground
+            font.pixelSize: Math.round(14 * SettingsState.scaleFactor)
             font.family: "JetBrainsMono Nerd Font"
         }
 
@@ -38,6 +47,9 @@ RowLayout {
             acceptedButtons: Qt.LeftButton | Qt.RightButton
             onClicked: (mouse) => {
                 if (mouse.button === Qt.LeftButton) {
+                    const pos = wifiBtn.mapToItem(null, wifiBtn.width / 2, wifiBtn.height)
+                    NetworkState.anchorX = pos.x
+                    root.closeOtherPopovers("network")
                     NetworkState.visible = !NetworkState.visible
                 } else if (mouse.button === Qt.RightButton) {
                     wifiMenuProc.running = true
@@ -55,8 +67,8 @@ RowLayout {
     Item {
         id: brightnessContainer
         Layout.alignment: Qt.AlignVCenter
-        implicitWidth: brightnessIcon.width + 4 + brightnessLabel.width
-        implicitHeight: 16
+        implicitWidth: brightnessIcon.width + Math.round(4 * SettingsState.scaleFactor) + brightnessLabel.width
+        implicitHeight: Math.round(22 * SettingsState.scaleFactor)
 
         Text {
             id: brightnessIcon
@@ -64,18 +76,18 @@ RowLayout {
             anchors.verticalCenter: parent.verticalCenter
             text: "󰃞"
             color: Colors.foreground
-            font.pixelSize: 14
+            font.pixelSize: Math.round(14 * SettingsState.scaleFactor)
             font.family: "JetBrainsMono Nerd Font"
         }
 
         Text {
             id: brightnessLabel
             anchors.left: brightnessIcon.right
-            anchors.leftMargin: 4
+            anchors.leftMargin: Math.round(4 * SettingsState.scaleFactor)
             anchors.verticalCenter: brightnessIcon.verticalCenter
             text: Math.round(root.currentBrightness * 100) + "%"
             color: Colors.foreground
-            font.pixelSize: 11
+            font.pixelSize: Math.round(11 * SettingsState.scaleFactor)
         }
 
         MouseArea {
@@ -90,7 +102,6 @@ RowLayout {
         }
     }
 
-    // Scroll durduktan 150ms sonra gerçek komutu çalıştır
     Timer {
         id: brightnessDebounce
         interval: 150
@@ -106,7 +117,6 @@ RowLayout {
         onExited: brightnessGetProc.running = true
     }
 
-    // Gerçek donanım değeriyle senkronize etmek için (scroll yokken de)
     Process {
         id: brightnessGetProc
         command: ["brightnessctl", "-m", "info"]
@@ -124,6 +134,7 @@ RowLayout {
             }
         }
     }
+
     Timer {
         interval: Math.max(250, SettingsState.brightnessPollInterval)
         running: true
@@ -135,39 +146,46 @@ RowLayout {
         }
     }
 
-    // ---- VOLUME (AudioMixerState ile senkronize, event-driven) ----
-    Item {
+    // ---- VOLUME ----
+    Rectangle {
         id: volumeContainer
         Layout.alignment: Qt.AlignVCenter
-        implicitWidth: volumeIcon.width + 4 + volumeLabel.width
-        implicitHeight: 16
+        implicitWidth: volumeRow.implicitWidth + Math.round(10 * SettingsState.scaleFactor)
+        implicitHeight: Math.round(26 * SettingsState.scaleFactor)
+        radius: Math.round(6 * SettingsState.scaleFactor)
+        color: volumeHover.containsMouse || AudioDeviceListState.visible ? Colors.hover : "transparent"
+        Behavior on color { ColorAnimation { duration: 120 } }
 
-        Text {
-            id: volumeIcon
-            anchors.left: parent.left
-            anchors.verticalCenter: parent.verticalCenter
-            text: AudioMixerState.masterMuted ? "󰝟" : "󰕾"
-            color: Colors.foreground
-            font.pixelSize: 14
-            font.family: "JetBrainsMono Nerd Font"
-        }
+        RowLayout {
+            id: volumeRow
+            anchors.centerIn: parent
+            spacing: Math.round(4 * SettingsState.scaleFactor)
 
-        Text {
-            id: volumeLabel
-            anchors.left: volumeIcon.right
-            anchors.leftMargin: 4
-            anchors.verticalCenter: volumeIcon.verticalCenter
-            text: Math.round(AudioMixerState.masterVolume * 100) + "%"
-            color: Colors.foreground
-            font.pixelSize: 11
+            Text {
+                text: AudioMixerState.masterMuted ? "󰝟" : "󰕾"
+                color: AudioDeviceListState.visible ? Colors.accent : Colors.foreground
+                font.pixelSize: Math.round(14 * SettingsState.scaleFactor)
+                font.family: "JetBrainsMono Nerd Font"
+            }
+
+            Text {
+                text: Math.round(AudioMixerState.masterVolume * 100) + "%"
+                color: AudioDeviceListState.visible ? Colors.accent : Colors.foreground
+                font.pixelSize: Math.round(11 * SettingsState.scaleFactor)
+            }
         }
 
         MouseArea {
+            id: volumeHover
             anchors.fill: parent
+            hoverEnabled: true
             cursorShape: Qt.PointingHandCursor
             acceptedButtons: Qt.LeftButton | Qt.MiddleButton
             onClicked: (mouse) => {
                 if (mouse.button === Qt.LeftButton) {
+                    const pos = volumeContainer.mapToItem(null, volumeContainer.width / 2, volumeContainer.height)
+                    AudioDeviceListState.anchorX = pos.x
+                    root.closeOtherPopovers("audio")
                     AudioDeviceListState.visible = !AudioDeviceListState.visible
                 } else if (mouse.button === Qt.MiddleButton) {
                     AudioMixerState.toggleMasterMute()
@@ -183,7 +201,6 @@ RowLayout {
         }
     }
 
-    // Scroll durduktan 150ms sonra gerçek komutu çalıştır
     Timer {
         id: volumeDebounce
         interval: 150
@@ -196,10 +213,10 @@ RowLayout {
     Rectangle {
         id: btBtn
         Layout.alignment: Qt.AlignVCenter
-        width: 26
-        height: 26
-        radius: 6
-        color: btHover.containsMouse ? Colors.hover : "transparent"
+        width: Math.round(26 * SettingsState.scaleFactor)
+        height: width
+        radius: Math.round(6 * SettingsState.scaleFactor)
+        color: btHover.containsMouse || BluetoothListState.visible ? Colors.hover : "transparent"
         Behavior on color { ColorAnimation { duration: 120 } }
 
         Text {
@@ -209,8 +226,8 @@ RowLayout {
                 if (BluetoothStatus.connectedCount > 0) return "󰂱"
                 return "󰂯"
             }
-            color: Colors.foreground
-            font.pixelSize: 14
+            color: BluetoothListState.visible ? Colors.accent : Colors.foreground
+            font.pixelSize: Math.round(14 * SettingsState.scaleFactor)
             font.family: "JetBrainsMono Nerd Font"
         }
 
@@ -222,6 +239,9 @@ RowLayout {
             acceptedButtons: Qt.LeftButton | Qt.RightButton
             onClicked: (mouse) => {
                 if (mouse.button === Qt.LeftButton) {
+                    const pos = btBtn.mapToItem(null, btBtn.width / 2, btBtn.height)
+                    BluetoothListState.anchorX = pos.x
+                    root.closeOtherPopovers("bluetooth")
                     BluetoothListState.visible = !BluetoothListState.visible
                 } else if (mouse.button === Qt.RightButton) {
                     bluetoothMenuProc.running = true

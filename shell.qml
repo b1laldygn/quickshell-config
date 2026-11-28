@@ -21,6 +21,7 @@ import "root:/modules/alttab"
 import "root:/modules/weather"
 import "root:/modules/deskwidgets"
 import "root:/modules/settings"
+import "root:/modules/scratchpad"
 
 
 ShellRoot {
@@ -56,6 +57,8 @@ ShellRoot {
     DesktopWidgets {}
     Settings {}
     SettingsIpc {}
+    ScratchpadDrawer {}
+    ScratchpadIpc {}
     ClockWidget {}
     SystemWidget {}
     MediaWidget {}

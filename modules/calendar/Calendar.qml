@@ -5,6 +5,7 @@ import QtQuick
 import QtQuick.Layouts
 import "root:/config"
 import "root:/services"
+import "root:/modules/common"
 
 Scope {
     Variants {
@@ -15,38 +16,18 @@ Scope {
             property var modelData
             screen: modelData
 
-            // Pencere kapanış animasyonu bitene kadar açık kalsın
-            property bool showWindow: false
-            visible: showWindow
+            visible: fx.shown
 
-            onVisibleChanged: {}
-
-            Connections {
-                target: CalendarState
-                function onVisibleChanged() {
-                    if (CalendarState.visible) {
-                        calWindow.showWindow = true
-                    } else {
-                        hideTimer.restart()
-                    }
-                }
+            PopupFx {
+                id: fx
+                open: CalendarState.visible
             }
 
-            Timer {
-                id: hideTimer
-                interval: 220
-                onTriggered: calWindow.showWindow = false
-            }
-
-            anchors { top: true }
-            margins.top: 44
-
-            implicitWidth: 280
-            implicitHeight: 320
+            anchors { top: true; bottom: true; left: true; right: true }
             color: "transparent"
 
             WlrLayershell.layer: WlrLayer.Overlay
-            WlrLayershell.exclusiveZone: -1
+            WlrLayershell.keyboardFocus: CalendarState.visible ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
 
             function buildDays(month, year) {
                 const firstOfMonth = new Date(year, month, 1)
@@ -83,125 +64,182 @@ Scope {
                 NumberAnimation { target: gridWrapper; property: "opacity"; to: 1; duration: 160; easing.type: Easing.OutCubic }
             }
 
-            Rectangle {
-                id: card
+            Item {
                 anchors.fill: parent
-                radius: 12
-                color: Colors.backgroundAlt
-                border.color: Colors.border
-                border.width: 1
+                focus: CalendarState.visible
+                Keys.onEscapePressed: CalendarState.visible = false
 
-                opacity: CalendarState.visible ? 1 : 0
-                scale: CalendarState.visible ? 1 : 0.92
-                y: CalendarState.visible ? 0 : -12
-                transformOrigin: Item.Top
-
-                Behavior on opacity { NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
-                Behavior on scale { NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
-                Behavior on y { NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
-
-                ColumnLayout {
+                MouseArea {
                     anchors.fill: parent
-                    anchors.margins: 14
-                    spacing: 8
+                    onClicked: CalendarState.visible = false
+                }
 
-                    RowLayout {
-                        Layout.fillWidth: true
+                Rectangle {
+                    id: card
+                    readonly property real s: SettingsState.scaleFactor
+                    anchors.top: parent.top
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    anchors.topMargin: Math.round((SettingsState.barHeight + 8) * s)
+                    width: Math.round(300 * s)
+                    height: Math.round(335 * s)
+                    radius: Math.round(14 * s)
+                    color: Qt.rgba(Colors.backgroundAlt.r, Colors.backgroundAlt.g, Colors.backgroundAlt.b, 0.96)
+                    border.color: Colors.border
+                    border.width: 1
 
-                        Rectangle {
-                            width: 24; height: 24; radius: 6
-                            color: prevHover.containsMouse ? Colors.hover : "transparent"
-                            Behavior on color { ColorAnimation { duration: 100 } }
+                    opacity: fx.cardOpacity
+                    scale: fx.cardScale
+                    transformOrigin: Item.Top
+                    transform: Translate { y: fx.cardY }
 
-                            Text {
-                                anchors.centerIn: parent
-                                text: "‹"
-                                color: "#F5F5F5"
-                                font.pixelSize: 16
-                            }
+                    MouseArea { anchors.fill: parent; onClicked: {} }
 
-                            MouseArea {
-                                id: prevHover
-                                anchors.fill: parent
-                                hoverEnabled: true
-                                cursorShape: Qt.PointingHandCursor
-                                onClicked: CalendarState.prevMonth()
-                            }
-                        }
+                    ColumnLayout {
+                        anchors.fill: parent
+                        anchors.margins: Math.round(14 * card.s)
+                        spacing: Math.round(10 * card.s)
 
-                        Text {
-                            text: I18n.tArr("monthNames")[CalendarState.viewMonth] + " " + CalendarState.viewYear
-                            color: "#F5F5F5"
-                            font.pixelSize: 13
-                            font.bold: true
+                        // ── Başlık ve Ay Navigasyonu ─────────────────────────
+                        RowLayout {
                             Layout.fillWidth: true
-                            horizontalAlignment: Text.AlignHCenter
-                        }
+                            spacing: Math.round(6 * card.s)
 
-                        Rectangle {
-                            width: 24; height: 24; radius: 6
-                            color: nextHover.containsMouse ? Colors.hover : "transparent"
-                            Behavior on color { ColorAnimation { duration: 100 } }
+                            Rectangle {
+                                width: Math.round(26 * card.s)
+                                height: width
+                                radius: Math.round(7 * card.s)
+                                color: prevHover.containsMouse ? Colors.hover : Colors.surface0
+                                Behavior on color { ColorAnimation { duration: 100 } }
 
-                            Text {
-                                anchors.centerIn: parent
-                                text: "›"
-                                color: "#F5F5F5"
-                                font.pixelSize: 16
-                            }
-
-                            MouseArea {
-                                id: nextHover
-                                anchors.fill: parent
-                                hoverEnabled: true
-                                cursorShape: Qt.PointingHandCursor
-                                onClicked: CalendarState.nextMonth()
-                            }
-                        }
-                    }
-
-                    Item {
-                        id: gridWrapper
-                        Layout.fillWidth: true
-                        Layout.fillHeight: true
-
-                        GridLayout {
-                            anchors.fill: parent
-                            columns: 7
-                            rowSpacing: 4
-                            columnSpacing: 4
-
-                            Repeater {
-                                model: 7
                                 Text {
-                                    text: TimeFormat.weekdayLabel(index)
-                                    color: Colors.foregroundMuted
-                                    font.pixelSize: 10
-                                    font.bold: true
-                                    Layout.preferredWidth: 32
-                                    horizontalAlignment: Text.AlignHCenter
+                                    anchors.centerIn: parent
+                                    text: "‹"
+                                    color: Colors.foreground
+                                    font.pixelSize: Math.round(16 * card.s)
+                                }
+
+                                MouseArea {
+                                    id: prevHover
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: CalendarState.prevMonth()
                                 }
                             }
 
-                            Repeater {
-                                model: calWindow.dayCells
+                            Text {
+                                text: I18n.tArr("monthNames")[CalendarState.viewMonth] + " " + CalendarState.viewYear
+                                color: Colors.foreground
+                                font.pixelSize: Math.round(13 * card.s)
+                                font.bold: true
+                                Layout.fillWidth: true
+                                horizontalAlignment: Text.AlignHCenter
+                            }
 
-                                Rectangle {
-                                    Layout.preferredWidth: 32
-                                    Layout.preferredHeight: 28
-                                    radius: 6
-                                    color: modelData.isToday ? Colors.accent : "transparent"
+                            Rectangle {
+                                width: Math.round(26 * card.s)
+                                height: width
+                                radius: Math.round(7 * card.s)
+                                color: nextHover.containsMouse ? Colors.hover : Colors.surface0
+                                Behavior on color { ColorAnimation { duration: 100 } }
 
-                                    Behavior on color { ColorAnimation { duration: 150 } }
+                                Text {
+                                    anchors.centerIn: parent
+                                    text: "›"
+                                    color: Colors.foreground
+                                    font.pixelSize: Math.round(16 * card.s)
+                                }
 
+                                MouseArea {
+                                    id: nextHover
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: CalendarState.nextMonth()
+                                }
+                            }
+
+                            Rectangle {
+                                width: todayTxt.implicitWidth + Math.round(12 * card.s)
+                                height: Math.round(24 * card.s)
+                                radius: Math.round(6 * card.s)
+                                color: todayHover.containsMouse ? Colors.accent : Qt.rgba(Colors.accent.r, Colors.accent.g, Colors.accent.b, 0.16)
+
+                                Text {
+                                    id: todayTxt
+                                    anchors.centerIn: parent
+                                    text: I18n.t("today")
+                                    color: todayHover.containsMouse ? Colors.accentText : Colors.accent
+                                    font.pixelSize: Math.round(10 * card.s)
+                                    font.bold: true
+                                }
+
+                                MouseArea {
+                                    id: todayHover
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: {
+                                        const now = new Date()
+                                        CalendarState.viewMonth = now.getMonth()
+                                        CalendarState.viewYear = now.getFullYear()
+                                    }
+                                }
+                            }
+                        }
+
+                        Item {
+                            id: gridWrapper
+                            Layout.fillWidth: true
+                            Layout.fillHeight: true
+
+                            GridLayout {
+                                anchors.fill: parent
+                                columns: 7
+                                rowSpacing: Math.round(4 * card.s)
+                                columnSpacing: Math.round(4 * card.s)
+
+                                Repeater {
+                                    model: 7
                                     Text {
-                                        anchors.centerIn: parent
-                                        text: modelData.day
+                                        text: TimeFormat.weekdayLabel(index)
+                                        color: Colors.foregroundMuted
+                                        font.pixelSize: Math.round(10 * card.s)
+                                        font.bold: true
+                                        Layout.fillWidth: true
+                                        horizontalAlignment: Text.AlignHCenter
+                                    }
+                                }
+
+                                Repeater {
+                                    model: calWindow.dayCells
+
+                                    Rectangle {
+                                        Layout.fillWidth: true
+                                        Layout.preferredHeight: Math.round(30 * card.s)
+                                        radius: Math.round(7 * card.s)
                                         color: modelData.isToday
-                                            ? Colors.accentText
-                                            : (modelData.current ? "#F5F5F5" : Colors.foregroundMuted)
-                                        font.pixelSize: 11
-                                        font.bold: modelData.isToday
+                                            ? Colors.accent
+                                            : (dayHover.containsMouse && modelData.current ? Colors.hover : "transparent")
+
+                                        Behavior on color { ColorAnimation { duration: 120 } }
+
+                                        Text {
+                                            anchors.centerIn: parent
+                                            text: modelData.day
+                                            color: modelData.isToday
+                                                ? Colors.accentText
+                                                : (modelData.current ? Colors.foreground : Colors.foregroundMuted)
+                                            opacity: modelData.current ? 1.0 : 0.45
+                                            font.pixelSize: Math.round(11 * card.s)
+                                            font.bold: modelData.isToday
+                                        }
+
+                                        MouseArea {
+                                            id: dayHover
+                                            anchors.fill: parent
+                                            hoverEnabled: true
+                                        }
                                     }
                                 }
                             }

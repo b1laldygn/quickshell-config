@@ -60,6 +60,11 @@ Rectangle {
         onClicked: {
             const pos = root.mapToItem(null, root.width / 2, root.height)
             SystemInfo.anchorX = pos.x
+            NetworkState.visible = false
+            AudioDeviceListState.visible = false
+            BluetoothListState.visible = false
+            WeatherPanelState.visible = false
+            CalendarState.visible = false
             SystemInfo.togglePanel()
         }
     }

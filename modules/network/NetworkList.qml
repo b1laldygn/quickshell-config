@@ -27,17 +27,24 @@ Scope {
             color: "transparent"
 
             WlrLayershell.layer: WlrLayer.Overlay
-            WlrLayershell.keyboardFocus: WlrKeyboardFocus.OnDemand
+            WlrLayershell.keyboardFocus: NetworkState.visible ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
 
             property string selectedSsid: ""
             property bool showPasswordFor: false
             property bool connectFailed: false
             property var savedConnections: []
 
+            function signalIcon(sig) {
+                if (sig >= 75) return "󰤨"
+                if (sig >= 50) return "󰤥"
+                if (sig >= 25) return "󰤢"
+                return "󰤟"
+            }
+
             function refreshScan() {
                 NetworkState.scanning = true
-                scanProc.running = true
-                savedProc.running = true
+                if (!scanProc.running) scanProc.running = true
+                if (!savedProc.running) savedProc.running = true
             }
 
             function attemptConnect() {
@@ -87,7 +94,7 @@ Scope {
                                 inUse: parts[3] === "*"
                             })
                         }
-                        list.sort((a, b) => b.signal - a.signal)
+                        list.sort((a, b) => (b.inUse - a.inUse) || (b.signal - a.signal))
                         NetworkState.networks = list
                         NetworkState.scanning = false
                     }
@@ -108,8 +115,6 @@ Scope {
                 id: connectProc
                 onExited: (exitCode) => {
                     if (exitCode !== 0) {
-                        // Kayıtlı bağlantı denemesi başarısız olduysa (örn. şifre değişmiş),
-                        // kullanıcıya şifre alanını aç ki tekrar deneyebilsin.
                         netWindow.connectFailed = true
                         netWindow.showPasswordFor = true
                     } else {
@@ -121,27 +126,29 @@ Scope {
 
             Item {
                 anchors.fill: parent
-                focus: netWindow.visible
+                focus: NetworkState.visible
                 Keys.onEscapePressed: NetworkState.visible = false
 
                 MouseArea {
                     anchors.fill: parent
                     onClicked: NetworkState.visible = false
-    }
+                }
 
                 Rectangle {
+                    id: card
+                    readonly property real s: SettingsState.scaleFactor
                     anchors.top: parent.top
                     anchors.left: parent.left
-                    anchors.topMargin: 44   // NOT: bar yüksekliğine göre ayarla
-                    anchors.leftMargin: 10
-                    width: 300
-                    height: 360
-                    radius: 14
+                    anchors.topMargin: Math.round((SettingsState.barHeight + 8) * s)
+                    anchors.leftMargin: Math.max(8, Math.min(NetworkState.anchorX - width / 2, parent.width - width - 8))
+                    width: Math.round(310 * s)
+                    height: Math.round(380 * s)
+                    radius: Math.round(14 * s)
                     opacity: fx.cardOpacity
                     scale: fx.cardScale
                     transformOrigin: Item.Top
                     transform: Translate { y: fx.cardY }
-                    color: Colors.backgroundAlt
+                    color: Qt.rgba(Colors.backgroundAlt.r, Colors.backgroundAlt.g, Colors.backgroundAlt.b, 0.96)
                     border.color: Colors.border
                     border.width: 1
 
@@ -149,73 +156,153 @@ Scope {
 
                     ColumnLayout {
                         anchors.fill: parent
-                        anchors.margins: 12
-                        spacing: 8
+                        anchors.margins: Math.round(14 * card.s)
+                        spacing: Math.round(10 * card.s)
 
+                        // ── Başlık ───────────────────────────────────────────
                         RowLayout {
                             Layout.fillWidth: true
+                            spacing: Math.round(8 * card.s)
+
+                            Rectangle {
+                                width: Math.round(26 * card.s)
+                                height: width
+                                radius: Math.round(8 * card.s)
+                                color: Qt.rgba(Colors.accent.r, Colors.accent.g, Colors.accent.b, 0.16)
+
+                                Text {
+                                    anchors.centerIn: parent
+                                    text: "󰖩"
+                                    color: Colors.accent
+                                    font.pixelSize: Math.round(13 * card.s)
+                                    font.family: "JetBrainsMono Nerd Font"
+                                }
+                            }
+
                             Text {
                                 text: I18n.t("wifiNetworks")
-                                color: "#F5F5F5"
-                                font.pixelSize: 13
+                                color: Colors.foreground
+                                font.pixelSize: Math.round(14 * card.s)
                                 font.bold: true
                                 Layout.fillWidth: true
                             }
+
                             Text {
-                                text: "󰑓"
-                                color: "#F5F5F5"
-                                font.pixelSize: 14
-                                font.family: "JetBrainsMono Nerd Font"
+                                visible: NetworkState.scanning
+                                text: I18n.t("scanning")
+                                color: Colors.accent
+                                font.pixelSize: Math.round(10 * card.s)
+                            }
+
+                            Rectangle {
+                                width: Math.round(24 * card.s)
+                                height: width
+                                radius: Math.round(6 * card.s)
+                                color: refreshHover.containsMouse ? Colors.hover : "transparent"
+
+                                Text {
+                                    anchors.centerIn: parent
+                                    text: "󰑓"
+                                    color: NetworkState.scanning ? Colors.accent : Colors.foregroundMuted
+                                    font.pixelSize: Math.round(13 * card.s)
+                                    font.family: "JetBrainsMono Nerd Font"
+                                }
+
                                 MouseArea {
+                                    id: refreshHover
                                     anchors.fill: parent
+                                    hoverEnabled: true
                                     cursorShape: Qt.PointingHandCursor
                                     onClicked: netWindow.refreshScan()
                                 }
                             }
+
+                            Rectangle {
+                                width: Math.round(24 * card.s)
+                                height: width
+                                radius: Math.round(6 * card.s)
+                                color: closeHover.containsMouse ? Qt.rgba(Colors.danger.r, Colors.danger.g, Colors.danger.b, 0.18) : "transparent"
+
+                                Text {
+                                    anchors.centerIn: parent
+                                    text: "✕"
+                                    color: closeHover.containsMouse ? Colors.danger : Colors.foregroundMuted
+                                    font.pixelSize: Math.round(11 * card.s)
+                                }
+
+                                MouseArea {
+                                    id: closeHover
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: NetworkState.visible = false
+                                }
+                            }
                         }
 
+                        // ── Ağ Listesi ───────────────────────────────────────
                         ListView {
                             id: listView
                             Layout.fillWidth: true
                             Layout.fillHeight: true
                             clip: true
-                            spacing: 4
+                            spacing: Math.round(4 * card.s)
                             model: NetworkState.networks
 
                             delegate: Rectangle {
                                 width: listView.width
-                                height: 40
-                                radius: 8
-                                color: netMouseArea.containsMouse ? Colors.hover : "transparent"
+                                height: Math.round(42 * card.s)
+                                radius: Math.round(9 * card.s)
+                                color: modelData.inUse
+                                    ? Qt.rgba(Colors.accent.r, Colors.accent.g, Colors.accent.b, 0.14)
+                                    : (netMouseArea.containsMouse ? Colors.hover : Colors.surface0)
+                                border.color: modelData.inUse ? Qt.rgba(Colors.accent.r, Colors.accent.g, Colors.accent.b, 0.45) : "transparent"
+                                border.width: 1
 
                                 RowLayout {
                                     anchors.fill: parent
-                                    anchors.margins: 8
-                                    spacing: 8
+                                    anchors.leftMargin: Math.round(10 * card.s)
+                                    anchors.rightMargin: Math.round(10 * card.s)
+                                    spacing: Math.round(8 * card.s)
 
                                     Text {
-                                        text: "󰖩"
-                                        color: modelData.inUse ? Colors.accent : "#F5F5F5"
-                                        font.pixelSize: 13
+                                        text: netWindow.signalIcon(modelData.signal)
+                                        color: modelData.inUse ? Colors.accent : Colors.foreground
+                                        font.pixelSize: Math.round(14 * card.s)
                                         font.family: "JetBrainsMono Nerd Font"
                                     }
+
                                     Text {
                                         text: modelData.ssid
-                                        color: modelData.inUse ? Colors.accent : "#F5F5F5"
-                                        font.pixelSize: 12
+                                        color: modelData.inUse ? Colors.accent : Colors.foreground
+                                        font.pixelSize: Math.round(12 * card.s)
+                                        font.bold: modelData.inUse
                                         Layout.fillWidth: true
                                         elide: Text.ElideRight
                                     }
-                                    Text {
-                                        text: modelData.inUse ? I18n.t("connected") : ""
-                                        color: Colors.foregroundMuted
-                                        font.pixelSize: 10
-                                        font.italic: true
+
+                                    Rectangle {
+                                        visible: modelData.inUse
+                                        height: Math.round(18 * card.s)
+                                        width: connText.implicitWidth + Math.round(10 * card.s)
+                                        radius: height / 2
+                                        color: Qt.rgba(Colors.accent.r, Colors.accent.g, Colors.accent.b, 0.22)
+
+                                        Text {
+                                            id: connText
+                                            anchors.centerIn: parent
+                                            text: I18n.t("connected")
+                                            color: Colors.accent
+                                            font.pixelSize: Math.round(9 * card.s)
+                                            font.bold: true
+                                        }
                                     }
+
                                     Text {
-                                        text: modelData.security !== "--" ? "󰌾" : ""
+                                        visible: modelData.security !== "--"
+                                        text: "󰌾"
                                         color: Colors.foregroundMuted
-                                        font.pixelSize: 11
+                                        font.pixelSize: Math.round(11 * card.s)
                                         font.family: "JetBrainsMono Nerd Font"
                                     }
                                 }
@@ -226,9 +313,7 @@ Scope {
                                     hoverEnabled: true
                                     cursorShape: Qt.PointingHandCursor
                                     onClicked: {
-                                        if (modelData.inUse) {
-                                            return // zaten bağlı, bir şey yapma
-                                        }
+                                        if (modelData.inUse) return
                                         netWindow.selectedSsid = modelData.ssid
                                         netWindow.showPasswordFor = false
                                         netWindow.connectFailed = false
@@ -244,43 +329,87 @@ Scope {
                                     }
                                 }
                             }
+
+                            Text {
+                                anchors.centerIn: parent
+                                visible: listView.count === 0 && !NetworkState.scanning
+                                text: I18n.t("noNetworks")
+                                color: Colors.foregroundMuted
+                                font.pixelSize: Math.round(12 * card.s)
+                                font.italic: true
+                            }
                         }
 
+                        // ── Şifre Alanı ──────────────────────────────────────
                         ColumnLayout {
                             Layout.fillWidth: true
                             visible: netWindow.showPasswordFor
-                            spacing: 4
+                            spacing: Math.round(6 * card.s)
 
                             Text {
                                 visible: netWindow.connectFailed
                                 text: I18n.t("connectFailedMessage")
-                                color: "#f38ba8"
-                                font.pixelSize: 10
+                                color: Colors.danger
+                                font.pixelSize: Math.round(10 * card.s)
                             }
 
                             RowLayout {
                                 Layout.fillWidth: true
-                                spacing: 6
+                                spacing: Math.round(6 * card.s)
 
-                                TextInput {
-                                    id: passwordField
+                                Rectangle {
                                     Layout.fillWidth: true
-                                    height: 30
-                                    color: "#F5F5F5"
-                                    font.pixelSize: 12
-                                    echoMode: TextInput.Password
-                                    clip: true
-                                    focus: netWindow.showPasswordFor
+                                    height: Math.round(32 * card.s)
+                                    radius: Math.round(8 * card.s)
+                                    color: Colors.surface0
+                                    border.color: passwordField.activeFocus ? Colors.accent : Colors.border
+                                    border.width: 1
 
-                                    Keys.onReturnPressed: netWindow.attemptConnectWithPassword()
+                                    TextInput {
+                                        id: passwordField
+                                        anchors.fill: parent
+                                        anchors.leftMargin: Math.round(10 * card.s)
+                                        anchors.rightMargin: Math.round(10 * card.s)
+                                        verticalAlignment: TextInput.AlignVCenter
+                                        color: Colors.foreground
+                                        font.pixelSize: Math.round(12 * card.s)
+                                        echoMode: TextInput.Password
+                                        clip: true
+                                        focus: netWindow.showPasswordFor
+
+                                        Keys.onReturnPressed: netWindow.attemptConnectWithPassword()
+                                    }
+
+                                    Text {
+                                        anchors.fill: parent
+                                        anchors.leftMargin: Math.round(10 * card.s)
+                                        verticalAlignment: Text.AlignVCenter
+                                        text: I18n.t("passwordPlaceholder")
+                                        color: Colors.foregroundMuted
+                                        font.pixelSize: Math.round(12 * card.s)
+                                        visible: passwordField.text.length === 0
+                                    }
                                 }
 
-                                Text {
-                                    text: I18n.t("connect")
-                                    color: Colors.accent
-                                    font.pixelSize: 12
+                                Rectangle {
+                                    height: Math.round(32 * card.s)
+                                    width: connectBtnText.implicitWidth + Math.round(20 * card.s)
+                                    radius: Math.round(8 * card.s)
+                                    color: connectBtnMouse.containsMouse ? Colors.accent : Qt.rgba(Colors.accent.r, Colors.accent.g, Colors.accent.b, 0.22)
+
+                                    Text {
+                                        id: connectBtnText
+                                        anchors.centerIn: parent
+                                        text: I18n.t("connect")
+                                        color: connectBtnMouse.containsMouse ? Colors.accentText : Colors.accent
+                                        font.pixelSize: Math.round(11 * card.s)
+                                        font.bold: true
+                                    }
+
                                     MouseArea {
+                                        id: connectBtnMouse
                                         anchors.fill: parent
+                                        hoverEnabled: true
                                         cursorShape: Qt.PointingHandCursor
                                         onClicked: netWindow.attemptConnectWithPassword()
                                     }
